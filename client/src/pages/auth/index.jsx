@@ -1,4 +1,6 @@
+import CommonForm from "@/components/common-form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { signInFormControls, signUpFormControls } from "@/config";
 import { GraduationCap } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -11,7 +13,7 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col -mt-8 min-h-screen">
       <header className="px-4 lg:px-6 h-14 flex items-center border-b">
         <Link to={"/"} className="flex items-center justify-center">
           <GraduationCap className="w-8 h-8 mr-4" />
@@ -31,8 +33,13 @@ const AuthPage = () => {
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="signin">Sign In</TabsContent>
-          <TabsContent value="signup">Sign Up</TabsContent>
+          <TabsContent value="signin">
+            {" "}
+            <CommonForm formControls={signInFormControls} />
+          </TabsContent>
+          <TabsContent value="signup">
+            <CommonForm formControls={signUpFormControls} />
+          </TabsContent>
         </Tabs>
       </div>
     </div>
