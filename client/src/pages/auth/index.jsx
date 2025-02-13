@@ -1,19 +1,48 @@
 import CommonForm from "@/components/common-form";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { signInFormControls, signUpFormControls } from "@/config";
+import { AuthContext } from "@/context/auth-context";
 import { GraduationCap } from "lucide-react";
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 const AuthPage = () => {
   const [activeTab, setActiveTab] = useState("signin");
+  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+
+  const { signInFormData, setSignInFormData } = useContext(AuthContext);
+  console.log(signInFormData);
+  const { signUpFormData, setSignUpFormData } = useContext(AuthContext);
 
   const handleTabChange = (newValue) => {
     setActiveTab(newValue);
   };
 
+  useEffect(() => {
+    setIsButtonDisabled(
+      !(signInFormData.userEmail && signInFormData.userPassword)
+    );
+  }, [signInFormData]);
+
+  useEffect(() => {
+    setIsButtonDisabled(
+      !(
+        signUpFormData.userName &&
+        signUpFormData.userEmail &&
+        signUpFormData.userPassword
+      )
+    );
+  }, [signUpFormData]);
+
   return (
-    <div className="flex flex-col -mt-8 min-h-screen">
+    <div className="flex flex-col min-h-screen">
       <header className="px-4 lg:px-6 h-14 flex items-center border-b">
         <Link to={"/"} className="flex items-center justify-center">
           <GraduationCap className="w-8 h-8 mr-4" />
@@ -34,11 +63,46 @@ const AuthPage = () => {
           </TabsList>
 
           <TabsContent value="signin">
-            {" "}
-            <CommonForm formControls={signInFormControls} />
+            <Card className="p-6 space-y-4">
+              <CardHeader>
+                <CardTitle>Sign in to your account</CardTitle>
+
+                <CardDescription>
+                  Enter your email and password to access your account{" "}
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent className="space-y-4">
+                <CommonForm
+                  formControls={signInFormControls}
+                  buttonText={"Sign In"}
+                  formData={signInFormData}
+                  setFormData={setSignInFormData}
+                  isButtonDisabled={isButtonDisabled}
+                />
+              </CardContent>
+            </Card>
           </TabsContent>
           <TabsContent value="signup">
-            <CommonForm formControls={signUpFormControls} />
+            <Card className="p-6 space-y-4">
+              <CardHeader>
+                <CardTitle>Create new account</CardTitle>
+
+                <CardDescription>
+                  Enter your details to get started{" "}
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent className="space-y-4">
+                <CommonForm
+                  formControls={signUpFormControls}
+                  buttonText={"Sign Up"}
+                  formData={signUpFormData}
+                  setFormData={setSignUpFormData}
+                  isButtonDisabled={isButtonDisabled}
+                />{" "}
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
