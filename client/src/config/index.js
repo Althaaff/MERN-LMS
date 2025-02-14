@@ -16,8 +16,8 @@ export const signUpFormControls = [
   },
 
   {
-    name: "userPassword",
-    label: "User Password",
+    name: "password",
+    label: "Password",
     placeholder: "Enter your password..",
     type: "password",
     componentType: "input",
@@ -34,8 +34,8 @@ export const signInFormControls = [
   },
 
   {
-    name: "userPassword",
-    label: "User Password",
+    name: "password",
+    label: "Password",
     placeholder: "Enter your password..",
     type: "password",
     componentType: "input",

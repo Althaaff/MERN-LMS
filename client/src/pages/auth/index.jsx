@@ -17,18 +17,22 @@ const AuthPage = () => {
   const [activeTab, setActiveTab] = useState("signin");
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
 
-  const { signInFormData, setSignInFormData } = useContext(AuthContext);
+  const {
+    signInFormData,
+    setSignInFormData,
+    signUpFormData,
+    setSignUpFormData,
+    handleRegiserUser,
+    handleLoginUser,
+  } = useContext(AuthContext);
   console.log(signInFormData);
-  const { signUpFormData, setSignUpFormData } = useContext(AuthContext);
 
   const handleTabChange = (newValue) => {
     setActiveTab(newValue);
   };
 
   useEffect(() => {
-    setIsButtonDisabled(
-      !(signInFormData.userEmail && signInFormData.userPassword)
-    );
+    setIsButtonDisabled(!(signInFormData.userEmail && signInFormData.password));
   }, [signInFormData]);
 
   useEffect(() => {
@@ -36,7 +40,7 @@ const AuthPage = () => {
       !(
         signUpFormData.userName &&
         signUpFormData.userEmail &&
-        signUpFormData.userPassword
+        signUpFormData.password
       )
     );
   }, [signUpFormData]);
@@ -79,6 +83,7 @@ const AuthPage = () => {
                   formData={signInFormData}
                   setFormData={setSignInFormData}
                   isButtonDisabled={isButtonDisabled}
+                  handleSubmit={handleLoginUser}
                 />
               </CardContent>
             </Card>
@@ -100,6 +105,7 @@ const AuthPage = () => {
                   formData={signUpFormData}
                   setFormData={setSignUpFormData}
                   isButtonDisabled={isButtonDisabled}
+                  handleSubmit={handleRegiserUser}
                 />{" "}
               </CardContent>
             </Card>

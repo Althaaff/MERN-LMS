@@ -1,19 +1,23 @@
 import dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
+import authRoutes from "./routes/authRoutes/index.js";
 
-dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 const MONGO_URI = process.env.MONGO_URI;
 
-cors({
-  origin: process.env.CLIENT_URL,
-  methods: ["GET", "POST", "DELETE", "PUT"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-});
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL,
+    methods: ["GET", "POST", "DELETE", "PUT"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 app.use(express.json());
 
@@ -24,6 +28,7 @@ mongoose
   .catch((error) => console.log(error));
 
 // routes configuration :
+app.use("/auth", authRoutes);
 
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
