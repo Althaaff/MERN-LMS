@@ -11,6 +11,7 @@ router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.get("/check-auth", authenticateMiddleware, (req, res) => {
   const user = req.user;
+  console.log("user :", user);
 
   return res.status(200).json({
     success: true,

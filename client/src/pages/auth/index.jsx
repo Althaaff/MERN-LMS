@@ -14,7 +14,7 @@ import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 const AuthPage = () => {
-  const [activeTab, setActiveTab] = useState("signin");
+  // const [activeTab, setActiveTab] = useState("signin");
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
 
   const {
@@ -22,14 +22,11 @@ const AuthPage = () => {
     setSignInFormData,
     signUpFormData,
     setSignUpFormData,
-    handleRegiserUser,
+    handleRegisterUser,
     handleLoginUser,
+    activeTab,
+    setActiveTab,
   } = useContext(AuthContext);
-  console.log(signInFormData);
-
-  const handleTabChange = (newValue) => {
-    setActiveTab(newValue);
-  };
 
   useEffect(() => {
     setIsButtonDisabled(!(signInFormData.userEmail && signInFormData.password));
@@ -58,7 +55,7 @@ const AuthPage = () => {
         <Tabs
           value={activeTab}
           defaultValue="signin"
-          onValueChange={handleTabChange}
+          onValueChange={setActiveTab}
           className="w-full max-w-md"
         >
           <TabsList className="grid w-full grid-cols-2">
@@ -105,7 +102,7 @@ const AuthPage = () => {
                   formData={signUpFormData}
                   setFormData={setSignUpFormData}
                   isButtonDisabled={isButtonDisabled}
-                  handleSubmit={handleRegiserUser}
+                  handleSubmit={handleRegisterUser}
                 />{" "}
               </CardContent>
             </Card>

@@ -2,53 +2,54 @@ import { User } from "../../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-export const registerUser = async (req, res, next) => {
-  try {
-    const { userName, userEmail, password, role } = req.body;
+export const registerUser = async (req, res) => {
+  const { userName, userEmail, password, role } = req.body;
 
-    // check if user already exist :
-    const existingUser = await User.findOne({
-      $or: [{ userEmail }, { userName }],
-    });
+  const existingUser = await User.findOne({
+    $or: [{ userEmail }, { userName }],
+  });
 
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: "username and user email already exists!",
-      });
-    }
-
-    // hashing password:
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newUser = new User({
-      userName,
-      userEmail,
-      password: hashedPassword,
-      role,
-    });
-
-    await newUser.save();
-
-    return res.status(201).json({
+  if (existingUser) {
+    return res.status(400).json({
       success: false,
-      message: "User registered successfully!",
+      message: "User name or user email already exists",
     });
-  } catch (error) {
-    next(error);
   }
+
+  const hashPassword = await bcrypt.hash(password, 10);
+  const newUser = new User({
+    userName,
+    userEmail,
+    role,
+    password: hashPassword,
+  });
+
+  await newUser.save();
+
+  return res.status(201).json({
+    success: true,
+    message: "User registered successfully!",
+  });
 };
 
 export const loginUser = async (req, res, next) => {
   try {
     const { userEmail, password } = req.body;
+    // console.log(userEmail, password);
 
     const checkUser = await User.findOne({ userEmail });
 
-    if (!checkUser || (await bcrypt.compare(password, checkUser.password))) {
+    if (!checkUser) {
+      return res.status(404).json({
+        success: false,
+        message: "user not found!",
+      });
+    }
+
+    if (!checkUser || !(await bcrypt.compare(password, checkUser.password))) {
       return res.status(401).json({
         success: false,
-        message: "Invalid credentials!",
+        message: "Invalid credentials!!",
       });
     }
 
@@ -61,7 +62,7 @@ export const loginUser = async (req, res, next) => {
         role: checkUser.role,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "120m" }
+      { expiresIn: "1d" }
     );
 
     // sends the response :

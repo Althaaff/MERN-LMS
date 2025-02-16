@@ -1,15 +1,15 @@
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
 import {
+  Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@radix-ui/react-select";
+} from "../ui/select";
+import { Textarea } from "../ui/textarea";
 
-const FormControls = ({ formControls = [], formData, setFormData }) => {
+function FormControls({ formControls = [], formData, setFormData }) {
   function renderComponentByType(getControlItem) {
     let element = null;
     const currentControlItemValue = formData[getControlItem.name] || "";
@@ -23,29 +23,29 @@ const FormControls = ({ formControls = [], formData, setFormData }) => {
             placeholder={getControlItem.placeholder}
             type={getControlItem.type}
             value={currentControlItemValue}
-            onChange={(e) =>
+            onChange={(event) =>
               setFormData({
                 ...formData,
-                [getControlItem.name]: e.target.value,
+                [getControlItem.name]: event.target.value,
               })
             }
           />
         );
-
         break;
-
       case "select":
         element = (
           <Select
             onValueChange={(value) =>
-              setFormData({ ...formData, [getControlItem.name]: value })
+              setFormData({
+                ...formData,
+                [getControlItem.name]: value,
+              })
             }
             value={currentControlItemValue}
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder={getControlItem.label} />
             </SelectTrigger>
-
             <SelectContent>
               {getControlItem.options && getControlItem.options.length > 0
                 ? getControlItem.options.map((optionItem) => (
@@ -58,7 +58,6 @@ const FormControls = ({ formControls = [], formData, setFormData }) => {
           </Select>
         );
         break;
-
       case "textarea":
         element = (
           <Textarea
@@ -66,10 +65,10 @@ const FormControls = ({ formControls = [], formData, setFormData }) => {
             name={getControlItem.name}
             placeholder={getControlItem.placeholder}
             value={currentControlItemValue}
-            onChange={(e) =>
+            onChange={(event) =>
               setFormData({
                 ...formData,
-                [getControlItem.name]: e.target.value,
+                [getControlItem.name]: event.target.value,
               })
             }
           />
@@ -84,10 +83,10 @@ const FormControls = ({ formControls = [], formData, setFormData }) => {
             placeholder={getControlItem.placeholder}
             type={getControlItem.type}
             value={currentControlItemValue}
-            onChange={(e) =>
+            onChange={(event) =>
               setFormData({
                 ...formData,
-                [getControlItem.name]: e.target.value,
+                [getControlItem.name]: event.target.value,
               })
             }
           />
@@ -97,19 +96,17 @@ const FormControls = ({ formControls = [], formData, setFormData }) => {
 
     return element;
   }
-  return (
-    <>
-      <div className="flex flex-col gap-3">
-        {formControls.map((controlItem) => (
-          <div key={controlItem.name}>
-            <Label htmlFor={controlItem.name}>{controlItem.label}</Label>
 
-            {renderComponentByType(controlItem)}
-          </div>
-        ))}
-      </div>
-    </>
+  return (
+    <div className="flex flex-col gap-3">
+      {formControls.map((controleItem) => (
+        <div key={controleItem.name}>
+          <Label htmlFor={controleItem.name}>{controleItem.label}</Label>
+          {renderComponentByType(controleItem)}
+        </div>
+      ))}
+    </div>
   );
-};
+}
 
 export default FormControls;

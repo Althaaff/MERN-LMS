@@ -7,6 +7,7 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (config) => {
     const accessToken = JSON.parse(sessionStorage.getItem("accessToken")) || "";
+    console.log(typeof accessToken);
 
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
@@ -14,7 +15,7 @@ axiosInstance.interceptors.request.use(
 
     return config;
   },
-  (error) => Promise.reject(error)
+  (err) => Promise.reject(err)
 );
 
 export { axiosInstance };
