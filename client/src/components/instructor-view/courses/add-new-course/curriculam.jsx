@@ -8,6 +8,7 @@ import { useContext } from "react";
 import { mediaUploadService } from "@/services";
 import { courseCurriculumInitialFormData } from "@/config";
 import MediaProgressBar from "@/components/media-progress-bar";
+import VideoPlayer from "@/components/video-player";
 
 const CourseCurriculam = () => {
   const {
@@ -141,12 +142,26 @@ const CourseCurriculam = () => {
               </div>
 
               <div className="mt-6">
-                <Input
-                  type="file"
-                  accept="video/*"
-                  onChange={(event) => handleSingleLectureUpload(event, index)}
-                  className="mb-4"
-                />
+                {courseCurriculamFormData[index].videoUrl ? (
+                  <div className="flex gap-5">
+                    <VideoPlayer
+                      width="450px"
+                      height="200px"
+                      url={courseCurriculamFormData[index].videoUrl}
+                    />
+                    <Button>Replace Video</Button>
+                    <Button className="bg-red-900">Delete Lecture</Button>
+                  </div>
+                ) : (
+                  <Input
+                    type="file"
+                    accept="video/*"
+                    onChange={(event) =>
+                      handleSingleLectureUpload(event, index)
+                    }
+                    className="mb-4"
+                  />
+                )}
               </div>
             </div>
           ))}
