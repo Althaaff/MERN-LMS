@@ -10,9 +10,11 @@ const AddNewCoursePage = () => {
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between">
-        <h1 className="text-3xl font-extrabold mb-5">Create a new course</h1>
+        <h1 className=" font-extrabold mb-5 text-xl md:text-3xl">
+          Create a new course
+        </h1>
 
-        <Button className="text-sm font-bold tracking-wider cursor-pointer uppercase">
+        <Button className="text-sm p-4 font-bold tracking-wider cursor-pointer uppercase">
           Submit
         </Button>
       </div>

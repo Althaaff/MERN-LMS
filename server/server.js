@@ -5,6 +5,7 @@ import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import authRoutes from "./routes/authRoutes/index.js";
+import mediaRoutes from "./routes/upload.routes.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -29,6 +30,9 @@ mongoose
 
 // routes configuration :
 app.use("/auth", authRoutes);
+
+// upload media routes :
+app.use("/media", mediaRoutes);
 
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
