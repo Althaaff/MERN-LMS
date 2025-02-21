@@ -22,7 +22,7 @@ async function checkAuthService() {
 }
 
 async function mediaUploadService(formData, onProgressCallback) {
-  const { data } = await axiosInstance.post("media/upload", formData, {
+  const { data } = await axiosInstance.post("/media/upload", formData, {
     onUploadProgress: (progressEvent) => {
       const percentCompleted = Math.round(
         (progressEvent.loaded * 100) / progressEvent.total
@@ -34,4 +34,18 @@ async function mediaUploadService(formData, onProgressCallback) {
   return data;
 }
 
-export { registerService, loginService, checkAuthService, mediaUploadService };
+// delete file using video public id :
+async function mediaDeleteService(id) {
+  const { data } = await axiosInstance.delete(`/media/delete/${id}`);
+  console.log("delete api data :", data);
+
+  return data;
+}
+
+export {
+  registerService,
+  loginService,
+  checkAuthService,
+  mediaUploadService,
+  mediaDeleteService,
+};

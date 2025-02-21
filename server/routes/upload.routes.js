@@ -22,12 +22,13 @@ const router = express.Router();
 
 router.post("/upload", upload.single("file"), async (req, res) => {
   if (!req.file) {
-    return res.status(400).json({ error: "No file uploaded" });
+    return res.status(400).json({ error: "No file uploaded!" });
   }
   try {
     const result = await uploadMediaToCloudinary(req.file.path);
     console.log(result);
 
+    // after file upload to cloudinary then delete locally saved file from the server or ./uploads folder :
     await deleteLocalFile(req.file.path);
 
     return res.status(200).json({
@@ -58,7 +59,7 @@ router.delete("/delete/:id", async (req, res) => {
 
     await deleteMediaFromCloudinary(id);
 
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       message: "Assets deleted successfully from cloudinary!",
     });

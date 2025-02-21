@@ -5,7 +5,7 @@ import { InstructorContext } from "@/context/instructor-context";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useContext } from "react";
-import { mediaUploadService } from "@/services";
+import { mediaDeleteService, mediaUploadService } from "@/services";
 import { courseCurriculumInitialFormData } from "@/config";
 import MediaProgressBar from "@/components/media-progress-bar";
 import VideoPlayer from "@/components/video-player";
@@ -21,7 +21,6 @@ const CourseCurriculam = () => {
     mediaUploadProgressPercentage,
     setMediaUploadProgressPercentage,
   } = useContext(InstructorContext);
-  console.log(courseCurriculamFormData);
 
   const handleNewLecture = () => {
     setCourseCurriculamFormData([
@@ -45,7 +44,7 @@ const CourseCurriculam = () => {
   };
 
   const handleFreePreviewChange = (currentValue, currentIndex) => {
-    console.log(currentValue, currentIndex);
+    // console.log(currentValue, currentIndex);
 
     const copyCurriculamFormData = [...courseCurriculamFormData];
     copyCurriculamFormData[currentIndex] = {
@@ -53,7 +52,7 @@ const CourseCurriculam = () => {
       freePreview: currentValue,
     };
 
-    console.log("copy:", copyCurriculamFormData);
+    // console.log("copy:", copyCurriculamFormData);
 
     setCourseCurriculamFormData(copyCurriculamFormData);
   };
@@ -92,6 +91,48 @@ const CourseCurriculam = () => {
     }
   };
 
+  const handleReplaceVideo = async (currentIndex) => {
+    let copyCurriculamFormData = [...courseCurriculamFormData];
+    // console.log("copy data", copyCurriculamFormData);
+
+    const getCurrentVideoPublicId =
+      copyCurriculamFormData[currentIndex]?.public_id;
+
+    // console.log("id :", getCurrentVideoPublicId);
+
+    const deleteCurrentMediaResponse = await mediaDeleteService(
+      getCurrentVideoPublicId
+    );
+
+    // console.log("delete media :", deleteCurrentMediaResponse);
+
+    if (deleteCurrentMediaResponse?.success) {
+      copyCurriculamFormData[currentIndex] = {
+        ...copyCurriculamFormData[currentIndex],
+        videoUrl: "",
+        public_id: "",
+      };
+
+      setCourseCurriculamFormData(copyCurriculamFormData);
+
+      console.log(" state updated :", copyCurriculamFormData);
+    }
+  };
+
+  // check course curriculam from data is valid if its not valid then disable the Add Lecture Button ?
+  function isCourseCurriculamFormDataValid() {
+    return courseCurriculamFormData.every((item) => {
+      return (
+        item &&
+        typeof item === "object" &&
+        item.title !== "" &&
+        item.videoUrl !== ""
+      );
+    });
+  }
+
+  // console.log("after delete :", courseCurriculamFormData);
+
   return (
     <Card>
       <CardHeader>
@@ -101,7 +142,11 @@ const CourseCurriculam = () => {
       </CardHeader>
 
       <CardContent>
-        <Button className="cursor-pointer" onClick={handleNewLecture}>
+        <Button
+          disabled={!isCourseCurriculamFormDataValid() || mediaUploadProgress}
+          className="cursor-pointer"
+          onClick={handleNewLecture}
+        >
           Add Lecture
         </Button>
 
@@ -149,7 +194,12 @@ const CourseCurriculam = () => {
                       height="200px"
                       url={courseCurriculamFormData[index].videoUrl}
                     />
-                    <Button>Replace Video</Button>
+                    <Button
+                      className="cursor-pointer"
+                      onClick={() => handleReplaceVideo(index)}
+                    >
+                      Replace Video
+                    </Button>
                     <Button className="bg-red-900">Delete Lecture</Button>
                   </div>
                 ) : (

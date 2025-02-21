@@ -8,7 +8,7 @@ import authRoutes from "./routes/authRoutes/index.js";
 import mediaRoutes from "./routes/upload.routes.js";
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 6000;
 
 const MONGO_URI = process.env.MONGO_URI;
 
