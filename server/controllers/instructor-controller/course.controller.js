@@ -1,5 +1,6 @@
 import { Course } from "../../models/course.model.js";
 
+//  create new course  :
 export const createNewCourse = async (req, res) => {
   try {
     const courseData = req.body;
@@ -23,6 +24,7 @@ export const createNewCourse = async (req, res) => {
   }
 };
 
+// get all course :
 export const getAllCourses = async (req, res) => {
   try {
     const coursesList = new Course.find({});
@@ -41,6 +43,7 @@ export const getAllCourses = async (req, res) => {
   }
 };
 
+// get course details by Id :
 export const getCourseDetailsById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -67,6 +70,7 @@ export const getCourseDetailsById = async (req, res) => {
   }
 };
 
+// update course by Id :
 export const updateCourseById = async (req, res) => {
   try {
     const { id } = req.params;

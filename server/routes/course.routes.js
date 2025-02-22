@@ -1,3 +1,5 @@
+// course routes :
+
 import express from "express";
 import {
   createNewCourse,
