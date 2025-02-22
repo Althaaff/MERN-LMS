@@ -97,6 +97,7 @@ export const courseLandingPageFormControls = [
     type: "text",
     placeholder: "Enter course title",
   },
+
   {
     name: "category",
     label: "Category",
@@ -105,6 +106,7 @@ export const courseLandingPageFormControls = [
     placeholder: "",
     options: courseCategories,
   },
+
   {
     name: "level",
     label: "Level",
@@ -113,6 +115,7 @@ export const courseLandingPageFormControls = [
     placeholder: "",
     options: courseLevelOptions,
   },
+
   {
     name: "primaryLanguage",
     label: "Primary Language",
@@ -121,6 +124,7 @@ export const courseLandingPageFormControls = [
     placeholder: "",
     options: languageOptions,
   },
+
   {
     name: "subtitle",
     label: "Subtitle",
@@ -128,6 +132,7 @@ export const courseLandingPageFormControls = [
     type: "text",
     placeholder: "Enter course subtitle",
   },
+
   {
     name: "description",
     label: "Description",
@@ -135,6 +140,7 @@ export const courseLandingPageFormControls = [
     type: "text",
     placeholder: "Enter course description",
   },
+
   {
     name: "pricing",
     label: "Pricing",
@@ -142,6 +148,7 @@ export const courseLandingPageFormControls = [
     type: "number",
     placeholder: "Enter course pricing",
   },
+
   {
     name: "objectives",
     label: "Objectives",
@@ -149,6 +156,7 @@ export const courseLandingPageFormControls = [
     type: "text",
     placeholder: "Enter course objectives",
   },
+
   {
     name: "welcomeMessage",
     label: "Welcome Message",

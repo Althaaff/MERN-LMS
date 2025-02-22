@@ -6,6 +6,7 @@ import cors from "cors";
 import mongoose from "mongoose";
 import authRoutes from "./routes/authRoutes/index.js";
 import mediaRoutes from "./routes/upload.routes.js";
+import istructorCourseRoutes from "./routes/course.routes.js";
 
 const app = express();
 const PORT = process.env.PORT || 6000;
@@ -33,6 +34,9 @@ app.use("/auth", authRoutes);
 
 // upload media routes :
 app.use("/media", mediaRoutes);
+
+// course routes :
+app.use("/instructor/course", istructorCourseRoutes);
 
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;

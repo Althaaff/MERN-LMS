@@ -42,7 +42,6 @@ const CourseSettings = () => {
             ...courseLandingFormData,
             image: response.data?.url,
           });
-
           setMediaUploadProgress(false);
 
           // console.log("course landing img :", courseLandingFormData);

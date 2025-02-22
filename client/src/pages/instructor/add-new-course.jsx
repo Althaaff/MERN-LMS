@@ -4,9 +4,53 @@ import CourseSettings from "@/components/instructor-view/courses/add-new-course/
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { InstructorContext } from "@/context/instructor-context";
 import { TabsContent } from "@radix-ui/react-tabs";
+import { useContext } from "react";
 
 const AddNewCoursePage = () => {
+  const { courseLandingFormData, courseCurriculamFormData } =
+    useContext(InstructorContext);
+
+  function isEmpty(value) {
+    if (Array.isArray(value)) {
+      return value.length === 0;
+    }
+
+    return value === "" || value === null || value === undefined;
+  }
+
+  // validateForm() returns true if the form is valid :
+  // !validateForm() to disable the button when the form is invalid :
+  function validateForm() {
+    for (const key in courseLandingFormData) {
+      if (isEmpty(courseLandingFormData[key])) {
+        return false;
+      }
+    }
+
+    let hasFreePreview = false; // intially hasFreePreview false
+
+    for (const item of courseCurriculamFormData) {
+      console.log(item);
+
+      // if items are empty then return false
+      if (
+        isEmpty(item.title) ||
+        isEmpty(item.videoUrl) ||
+        isEmpty(item.public_id)
+      ) {
+        return false;
+      }
+
+      if (item.freePreview) {
+        hasFreePreview = true; //found atleast one free preview //
+      }
+    }
+
+    return hasFreePreview;
+  }
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between">
@@ -14,7 +58,12 @@ const AddNewCoursePage = () => {
           Create a new course
         </h1>
 
-        <Button className="text-sm p-4 font-bold tracking-wider cursor-pointer uppercase">
+        {/* The disabled prop expects true to disable the button.
+            The disabled prop expects false to enable the button. */}
+        <Button
+          disabled={!validateForm()}
+          className="text-sm p-4 font-bold tracking-wider cursor-pointer uppercase"
+        >
           Submit
         </Button>
       </div>
