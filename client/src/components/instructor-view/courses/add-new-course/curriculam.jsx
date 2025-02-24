@@ -196,6 +196,26 @@ const CourseCurriculam = () => {
     }
   };
 
+  // delete lecture :
+  const handleDeleteLecture = async (currentIndex) => {
+    let copyCourseCurriculumFormData = [...courseCurriculamFormData];
+
+    const getCurrentVideoPublicId =
+      copyCourseCurriculumFormData[currentIndex].public_id;
+
+    const response = await mediaDeleteService(getCurrentVideoPublicId);
+
+    if (response?.success) {
+      copyCourseCurriculumFormData = copyCourseCurriculumFormData.filter(
+        (_, index) => {
+          return index !== currentIndex;
+        }
+      );
+
+      setCourseCurriculamFormData(copyCourseCurriculumFormData);
+    }
+  };
+
   // check course curriculam from data is valid if its not valid then disable the Add Lecture Button ?
   function isCourseCurriculamFormDataValid() {
     return courseCurriculamFormData.every((item) => {
@@ -299,7 +319,12 @@ const CourseCurriculam = () => {
                     >
                       Replace Video
                     </Button>
-                    <Button className="bg-red-900">Delete Lecture</Button>
+                    <Button
+                      onClick={() => handleDeleteLecture(index)}
+                      className="bg-red-900"
+                    >
+                      Delete Lecture
+                    </Button>
                   </div>
                 ) : (
                   <Input
