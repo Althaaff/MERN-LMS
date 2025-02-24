@@ -1,9 +1,10 @@
+import StudentViewCommonHeader from "@/components/student-view/Header";
 import { Outlet } from "react-router-dom";
 
 const StudentViewCommonLayout = () => {
   return (
     <div>
-      Common content
+      <StudentViewCommonHeader />
       <Outlet />
     </div>
   );
