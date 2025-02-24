@@ -44,6 +44,7 @@ async function mediaDeleteService(id) {
 
 async function fetchInstructorCourseListService() {
   const { data } = await axiosInstance.get(`/instructor/course/get`);
+  console.log("fetched data :", data);
 
   return data;
 }
@@ -61,6 +62,8 @@ async function fetchInstructorCourseDetailsService(id) {
   const { data } = await axiosInstance.get(
     `/instructor/course/get/details/${id}`
   );
+
+  console.log("update api called :", data);
 
   return data;
 }

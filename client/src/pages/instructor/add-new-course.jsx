@@ -4,13 +4,69 @@ import CourseSettings from "@/components/instructor-view/courses/add-new-course/
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  courseCurriculumInitialFormData,
+  courseLandingInitialFormData,
+} from "@/config";
+import { AuthContext } from "@/context/auth-context/index.jsx";
 import { InstructorContext } from "@/context/instructor-context";
+import {
+  addNewCourseService,
+  fetchInstructorCourseDetailsService,
+  updateCourseByIdService,
+} from "@/services";
 import { TabsContent } from "@radix-ui/react-tabs";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 const AddNewCoursePage = () => {
-  const { courseLandingFormData, courseCurriculamFormData } =
-    useContext(InstructorContext);
+  const {
+    courseLandingFormData,
+    courseCurriculamFormData,
+    setCourseLandingFormData,
+    setCourseCurriculamFormData,
+    currentEditedCourseId,
+    setCurrentEditedCourseId,
+  } = useContext(InstructorContext);
+
+  const { auth } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const params = useParams();
+
+  console.log("id :", currentEditedCourseId);
+
+  async function fetchCurrentCourseDetails() {
+    const response = await fetchInstructorCourseDetailsService(
+      currentEditedCourseId
+    );
+    // console.log(response.data);
+
+    if (response?.success) {
+      const setCourseFormData = Object.keys(
+        courseLandingInitialFormData
+      ).reduce((acc, key) => {
+        acc[key] = response?.data[key] || courseLandingInitialFormData[key];
+
+        return acc;
+      }, {});
+
+      console.log("response :", setCourseFormData);
+      setCourseLandingFormData(setCourseFormData);
+      setCourseCurriculamFormData(response?.data?.curriculam);
+    }
+  }
+
+  useEffect(() => {
+    if (currentEditedCourseId !== null) {
+      fetchCurrentCourseDetails();
+    }
+  }, [currentEditedCourseId]);
+
+  useEffect(() => {
+    if (params?.courseId) {
+      setCurrentEditedCourseId(params?.courseId);
+    }
+  }, [params?.courseId]);
 
   function isEmpty(value) {
     if (Array.isArray(value)) {
@@ -51,6 +107,44 @@ const AddNewCoursePage = () => {
     return hasFreePreview;
   }
 
+  async function handleCreateCourse() {
+    const courseFinalFormData = {
+      instructorId: auth?.user?._id,
+      instructorName: auth?.user?.userName,
+      date: new Date(),
+      ...courseLandingFormData,
+      students: [], // when creating course intially students should be empty //
+      curriculam: courseCurriculamFormData,
+      isPublished: true,
+    };
+
+    // const response = await addNewCourseService(courseFinalFormData);
+
+    // if (response?.success) {
+    //   setCourseLandingFormData(courseLandingInitialFormData);
+    //   setCourseCurriculamFormData(courseCurriculumInitialFormData);
+    //   navigate(-1);
+
+    //   console.log("course landing form data :", courseLandingFormData);
+    //   console.log("course curriculam form data :", courseCurriculamFormData);
+    // }
+
+    const response =
+      currentEditedCourseId !== null
+        ? await updateCourseByIdService(
+            currentEditedCourseId,
+            courseFinalFormData
+          )
+        : await addNewCourseService(courseFinalFormData);
+
+    if (response?.success) {
+      setCourseLandingFormData(courseLandingInitialFormData);
+      setCourseCurriculamFormData(courseCurriculumInitialFormData);
+      navigate(-1);
+      setCurrentEditedCourseId(null);
+    }
+  }
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between">
@@ -63,6 +157,7 @@ const AddNewCoursePage = () => {
         <Button
           disabled={!validateForm()}
           className="text-sm p-4 font-bold tracking-wider cursor-pointer uppercase"
+          onClick={handleCreateCourse}
         >
           Submit
         </Button>

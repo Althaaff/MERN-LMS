@@ -9,33 +9,36 @@ const lectureSchema = new Schema({
   freePreview: Boolean,
 });
 
-const courseSchema = new Schema({
-  instructorId: String,
-  instructorName: String,
-  date: Date,
-  title: String,
-  category: String,
-  level: String,
-  primaryLanguage: String,
-  language: String,
-  subtitle: String,
-  description: String,
-  image: String,
-  welcomeMessage: String,
-  pricing: Number,
-  objectives: String,
+const courseSchema = new Schema(
+  {
+    instructorId: String,
+    instructorName: String,
+    date: Date,
+    title: String,
+    category: String,
+    level: String,
+    primaryLanguage: String,
+    language: String,
+    subtitle: String,
+    description: String,
+    image: String,
+    welcomeMessage: String,
+    pricing: Number,
+    objectives: String,
 
-  students: [
-    {
-      studentId: String,
-      studentName: String,
-      studentEmail: String,
-    },
-  ],
+    students: [
+      {
+        studentId: String,
+        studentName: String,
+        studentEmail: String,
+      },
+    ],
 
-  curriculam: [lectureSchema],
-  isPublished: Boolean,
-});
+    curriculam: [lectureSchema],
+    isPublished: Boolean,
+  },
+  { timestamps: true }
+);
 
 const Course = mongoose.model("Course", courseSchema);
 

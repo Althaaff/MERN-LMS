@@ -5,13 +5,13 @@ export const createNewCourse = async (req, res) => {
   try {
     const courseData = req.body;
     const newlyCreatedCourse = new Course(courseData);
-    const saveCourse = newlyCreatedCourse.save();
+    const savedCourse = newlyCreatedCourse.save();
 
-    if (saveCourse) {
-      res.status(200).json({
+    if (savedCourse) {
+      return res.status(200).json({
         success: true,
         message: "course created successfullly!",
-        data: saveCourse,
+        data: savedCourse,
       });
     }
   } catch (error) {
@@ -27,7 +27,9 @@ export const createNewCourse = async (req, res) => {
 // get all course :
 export const getAllCourses = async (req, res) => {
   try {
-    const coursesList = new Course.find({});
+    const coursesList = await Course.find({});
+
+    console.log("course lists :", coursesList);
 
     return res.status(200).json({
       success: true,
@@ -36,7 +38,7 @@ export const getAllCourses = async (req, res) => {
   } catch (error) {
     console.log(error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "some error occured!",
     });
@@ -56,7 +58,7 @@ export const getCourseDetailsById = async (req, res) => {
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: courseDetails,
     });
@@ -90,7 +92,7 @@ export const updateCourseById = async (req, res) => {
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "course updated successfullly!",
       data: updatedCourse,

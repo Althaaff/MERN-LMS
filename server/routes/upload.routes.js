@@ -20,6 +20,7 @@ const deleteLocalFile = async (filePath) => {
 
 const router = express.Router();
 
+// upload single file :
 router.post("/upload", upload.single("file"), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: "No file uploaded!" });
@@ -68,6 +69,30 @@ router.delete("/delete/:id", async (req, res) => {
     res
       .status(500)
       .json({ success: false, message: "Error while upldeleting file!" });
+  }
+});
+
+// bulk upload :
+router.post("/bulk-upload", upload.array("files", 10), async (req, res) => {
+  try {
+    const uploadPromises = req.files.map((fileItem) =>
+      uploadMediaToCloudinary(fileItem.path)
+    );
+
+    const result = await Promise.all(uploadPromises);
+
+    return res.status(200).json({
+      success: true,
+      data: result,
+      message: "bulk upload successfully!",
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Error occured in bulk upload!",
+    });
   }
 });
 
