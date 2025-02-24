@@ -4,11 +4,16 @@ import { Input } from "@/components/ui/input";
 import { InstructorContext } from "@/context/instructor-context";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { useContext } from "react";
-import { mediaDeleteService, mediaUploadService } from "@/services";
+import { useContext, useRef } from "react";
+import {
+  mediaBulkUpload,
+  mediaDeleteService,
+  mediaUploadService,
+} from "@/services";
 import { courseCurriculumInitialFormData } from "@/config";
 import MediaProgressBar from "@/components/media-progress-bar";
 import VideoPlayer from "@/components/video-player";
+import { Upload } from "lucide-react";
 
 const CourseCurriculam = () => {
   const {
@@ -21,6 +26,8 @@ const CourseCurriculam = () => {
     mediaUploadProgressPercentage,
     setMediaUploadProgressPercentage,
   } = useContext(InstructorContext);
+
+  const bulkUploadInputRef = useRef(null);
 
   const handleNewLecture = () => {
     setCourseCurriculamFormData([
@@ -91,6 +98,10 @@ const CourseCurriculam = () => {
     }
   };
 
+  const handleOpenBulkUpload = async () => {
+    bulkUploadInputRef.current.click();
+  };
+
   const handleReplaceVideo = async (currentIndex) => {
     let copyCurriculamFormData = [...courseCurriculamFormData];
     // console.log("copy data", copyCurriculamFormData);
@@ -119,6 +130,72 @@ const CourseCurriculam = () => {
     }
   };
 
+  // check course curriculam all form data empty ?
+  function areAllCourseCurriculumFormDataEmpty(arr) {
+    return arr.every((obj) => {
+      return Object.entries(obj).every(([key, value]) => {
+        console.log("object key :", key);
+        // console.log("object value :", value);
+
+        // if value is true or false this not will consider its just ignored :
+        if (typeof value === "boolean") {
+          return true;
+        }
+        return value === "";
+      });
+    });
+  }
+
+  // bulk video upload:
+  const handleMediaBulkUpload = async (event) => {
+    const selectedFiles = Array.from(event.target.files); // Arr.from because we are uploading multiple files //
+    const bulkUploadFormData = new FormData();
+
+    console.log("selected multiple files: ", selectedFiles);
+
+    selectedFiles.forEach((fileItem) =>
+      bulkUploadFormData.append("files", fileItem)
+    );
+
+    try {
+      setMediaUploadProgress(true);
+
+      const response = await mediaBulkUpload(
+        bulkUploadFormData,
+        setMediaUploadProgressPercentage
+      );
+
+      console.log("response bulk :", response);
+
+      if (response?.success) {
+        let copyCourseCurriculumFormData = areAllCourseCurriculumFormDataEmpty(
+          courseCurriculamFormData
+        )
+          ? []
+          : [...courseCurriculamFormData];
+
+        copyCourseCurriculumFormData = [
+          ...copyCourseCurriculumFormData,
+          ...(Array.isArray(response?.data)
+            ? response.data.map((item, index) => ({
+                videoUrl: item.url,
+                public_id: item.public_id,
+                title: `Lecture ${
+                  copyCourseCurriculumFormData.length + (index + 1)
+                }`,
+                freePreview: false,
+              }))
+            : []),
+        ];
+
+        setCourseCurriculamFormData(copyCourseCurriculumFormData);
+        setMediaUploadProgress(false);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   // check course curriculam from data is valid if its not valid then disable the Add Lecture Button ?
   function isCourseCurriculamFormDataValid() {
     return courseCurriculamFormData.every((item) => {
@@ -135,10 +212,32 @@ const CourseCurriculam = () => {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row justify-between">
         <CardTitle className="font-extrabold">
           Create Course Curriculam
         </CardTitle>
+        <div>
+          <Input
+            type="file"
+            ref={bulkUploadInputRef}
+            accept="video/*"
+            multiple
+            className="hidden"
+            id="bulk-media-upload"
+            onChange={handleMediaBulkUpload}
+          />
+
+          <Button
+            as="label"
+            htmlFor="bulk-media-upload"
+            variant="outline"
+            className="cursor-pointer"
+            onClick={handleOpenBulkUpload}
+          >
+            <Upload className="w-4 h-4 mr-2 " />
+            Bulk Upload
+          </Button>
+        </div>
       </CardHeader>
 
       <CardContent>

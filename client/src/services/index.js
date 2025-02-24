@@ -21,6 +21,7 @@ async function checkAuthService() {
   return data;
 }
 
+// single image & video uplaod :
 async function mediaUploadService(formData, onProgressCallback) {
   const { data } = await axiosInstance.post("/media/upload", formData, {
     onUploadProgress: (progressEvent) => {
@@ -30,6 +31,23 @@ async function mediaUploadService(formData, onProgressCallback) {
       onProgressCallback(percentCompleted);
     },
   });
+
+  return data;
+}
+
+// bulk media upload : (max : 10)
+async function mediaBulkUpload(formData, onProgressCallback) {
+  const { data } = await axiosInstance.post("/media/bulk-upload", formData, {
+    onUploadProgress: (progressEvent) => {
+      const percentCompleted = Math.round(
+        (progressEvent.loaded * 100) / progressEvent.total // progress percentage calculation //
+      );
+
+      onProgressCallback(percentCompleted);
+    },
+  });
+
+  console.log("bulk api called data :", data);
 
   return data;
 }
@@ -83,6 +101,7 @@ export {
   checkAuthService,
   mediaUploadService,
   mediaDeleteService,
+  mediaBulkUpload,
   addNewCourseService,
   updateCourseByIdService,
   fetchInstructorCourseListService,
