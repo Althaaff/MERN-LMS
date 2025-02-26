@@ -60,13 +60,14 @@ async function mediaDeleteService(id) {
   return data;
 }
 
+// fetching instructor course list :
 async function fetchInstructorCourseListService() {
   const { data } = await axiosInstance.get(`/instructor/course/get`);
   console.log("fetched data :", data);
 
   return data;
 }
-
+// adding new course api service :
 async function addNewCourseService(formData) {
   const { data } = await axiosInstance.post(
     `/instructor/course/create`,
@@ -76,6 +77,7 @@ async function addNewCourseService(formData) {
   return data;
 }
 
+// fetching instructor course detail by service :
 async function fetchInstructorCourseDetailsService(id) {
   const { data } = await axiosInstance.get(
     `/instructor/course/get/details/${id}`
@@ -86,10 +88,27 @@ async function fetchInstructorCourseDetailsService(id) {
   return data;
 }
 
+// updating course by ID:
 async function updateCourseByIdService(id, formData) {
   const { data } = await axiosInstance.put(
     `/instructor/course/update/${id}`,
     formData
+  );
+
+  return data;
+}
+
+// fetching student view course lists : (student courses)
+async function fetchStudentViewCourseListService() {
+  const { data } = await axiosInstance.get("/student/course/get");
+
+  return data;
+}
+
+// fetching student course details by id :
+async function fetchStudentCourseDetailsById(courseId) {
+  const { data } = await axiosInstance.get(
+    `/student/course/get/details/${courseId}`
   );
 
   return data;
@@ -106,4 +125,6 @@ export {
   updateCourseByIdService,
   fetchInstructorCourseListService,
   fetchInstructorCourseDetailsService,
+  fetchStudentViewCourseListService,
+  fetchStudentCourseDetailsById,
 };

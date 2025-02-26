@@ -1,20 +1,37 @@
 import { Button } from "@/components/ui/button";
-import { AuthContext } from "@/context/auth-context";
-import { useContext } from "react";
+// import { AuthContext } from "@/context/auth-context";
+import { useContext, useEffect } from "react";
 import banner from "../../../../public/image.png";
 import { courseCategories } from "@/config";
 import { StudentContext } from "@/context/student-context";
+import { fetchStudentViewCourseListService } from "@/services";
 
 const StudentHomePage = () => {
-  const { resetCredential } = useContext(AuthContext);
+  // const { resetCredential } = useContext(AuthContext);
 
-  const { studentsCoursesList, setStudentsCoursesList } =
+  const { studentViewCoursesList, setStudentViewCoursesList } =
     useContext(StudentContext);
 
-  const handleLogout = () => {
-    resetCredential();
-    sessionStorage.clear();
-  };
+  console.log("studentViewCoursesList :", studentViewCoursesList);
+
+  async function fetchAllStudentViewCourses() {
+    const response = await fetchStudentViewCourseListService();
+
+    console.log("student courses :", response.data);
+
+    if (response?.success) {
+      setStudentViewCoursesList(response?.data);
+    }
+  }
+
+  useEffect(() => {
+    fetchAllStudentViewCourses();
+  }, []);
+
+  // const handleLogout = () => {
+  //   resetCredential();
+  //   sessionStorage.clear();
+  // };
 
   return (
     <div className="min-h-screen bg-white">
@@ -53,6 +70,45 @@ const StudentHomePage = () => {
             </Button>
           ))}
         </div>{" "}
+      </section>
+
+      <section className="py-12 px-4 lg:px-8">
+        <h1 className="text-2xl font-bold mb-6">Featured Courses</h1>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {studentViewCoursesList && studentViewCoursesList.length > 0 ? (
+            studentViewCoursesList.map((courseItem) => (
+              <div
+                className="border cursor-pointer shadow overflow-hidden rounded-lg"
+                key={courseItem._id}
+              >
+                <img
+                  src={courseItem?.image}
+                  alt="course img"
+                  width={250}
+                  height={150}
+                  className="w-full h-40 object-cover"
+                />
+
+                <div className="p-4">
+                  <h1 className="text-start font-bold mb-2 text-md">
+                    {courseItem.title}
+                  </h1>
+
+                  <p className="text-sm text-gray-700 mb-2">
+                    {courseItem?.instructorName}
+                  </p>
+
+                  <p className="font-bold text-[16px]">
+                    ${courseItem?.pricing}
+                  </p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <h1 className="">Courses not found!</h1>
+          )}
+        </div>
       </section>
     </div>
   );

@@ -129,6 +129,7 @@ const AddNewCoursePage = () => {
     //   console.log("course curriculam form data :", courseCurriculamFormData);
     // }
 
+    // if current id is not a null then update the course by calling the api updateCourseByIdService otherwise create course :
     const response =
       currentEditedCourseId !== null
         ? await updateCourseByIdService(

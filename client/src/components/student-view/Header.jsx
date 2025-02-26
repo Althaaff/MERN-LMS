@@ -2,10 +2,11 @@ import { Button } from "@/components/ui/button";
 import { AuthContext } from "@/context/auth-context";
 import { GraduationCap, TvMinimalPlay } from "lucide-react";
 import { useContext } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const StudentViewCommonHeader = () => {
   const { resetCredential } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   function handleLogout() {
     resetCredential();
@@ -28,6 +29,7 @@ const StudentViewCommonHeader = () => {
             <Button
               variant="ghost"
               className="text-[14px] md:text-[16px] font-medium cursor-pointer border"
+              onClick={() => navigate("/courses")}
             >
               Explore
             </Button>

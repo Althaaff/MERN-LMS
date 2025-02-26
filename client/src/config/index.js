@@ -57,6 +57,8 @@ export const initialSignInFormData = [
   },
 ];
 
+// course form data :
+
 export const languageOptions = [
   { id: "english", label: "English" },
   { id: "spanish", label: "Spanish" },
