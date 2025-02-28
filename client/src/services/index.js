@@ -60,6 +60,8 @@ async function mediaDeleteService(id) {
   return data;
 }
 
+// Instructor View services :
+
 // fetching instructor course list :
 async function fetchInstructorCourseListService() {
   const { data } = await axiosInstance.get(`/instructor/course/get`);
@@ -98,15 +100,17 @@ async function updateCourseByIdService(id, formData) {
   return data;
 }
 
-// fetching student view course lists : (student courses)
-async function fetchStudentViewCourseListService() {
-  const { data } = await axiosInstance.get("/student/course/get");
+// student View services :
+
+// fetching student view course lists by student query : (student courses):
+async function fetchStudentViewCourseListService(query) {
+  const { data } = await axiosInstance.get(`/student/course/get?${query}`);
 
   return data;
 }
 
-// fetching student course details by id :
-async function fetchStudentCourseDetailsById(courseId) {
+// fetching student course details service by ID :
+async function fetchStudentCourseDetailsService(courseId) {
   const { data } = await axiosInstance.get(
     `/student/course/get/details/${courseId}`
   );
@@ -126,5 +130,5 @@ export {
   fetchInstructorCourseListService,
   fetchInstructorCourseDetailsService,
   fetchStudentViewCourseListService,
-  fetchStudentCourseDetailsById,
+  fetchStudentCourseDetailsService,
 };
