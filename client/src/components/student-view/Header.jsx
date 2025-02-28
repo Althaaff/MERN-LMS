@@ -21,7 +21,7 @@ const StudentViewCommonHeader = () => {
             <GraduationCap className="w-8 h-8 mr-4 hover:scale-120 transition-all" />
 
             <span className="font-extrabold md:text-xl text-[14px]">
-              LMS LEARN
+              SkillUp Academy
             </span>
           </Link>
 
