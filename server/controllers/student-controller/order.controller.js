@@ -27,7 +27,7 @@ const createOrder = async (req, res) => {
       coursePricing,
     } = req.body;
 
-    console.log("price :", coursePricing);
+    console.log("title :", courseTitle);
 
     // create payment json :
     const create_payment_json = {

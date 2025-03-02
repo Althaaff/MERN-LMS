@@ -138,6 +138,14 @@ export async function captureAndFinalizePaymentService(
 
   return data;
 }
+
+async function fetchStudentBoughtCoursesService(studentId) {
+  const { data } = await axiosInstance.get(
+    `/student/courses-bought/get/${studentId}`
+  );
+
+  return data;
+}
 export {
   registerService,
   loginService,
@@ -151,4 +159,5 @@ export {
   fetchInstructorCourseDetailsService,
   fetchStudentViewCourseListService,
   fetchStudentCourseDetailsService,
+  fetchStudentBoughtCoursesService,
 };
