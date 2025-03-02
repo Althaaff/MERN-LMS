@@ -10,6 +10,8 @@ import NotFoundPage from "@/pages/not-found";
 import StudentViewCourseDetailsPage from "@/pages/student/course-details";
 import StudentViewCoursesPage from "@/pages/student/courses/index";
 import StudentHomePage from "@/pages/student/home";
+import PayPalPaymentReturnPage from "@/pages/student/payment-return";
+import StudentCourses from "@/pages/student/student-courses";
 import { useContext } from "react";
 import { Route, Routes } from "react-router-dom";
 
@@ -80,6 +82,8 @@ function App() {
             path="/course/details/:id"
             element={<StudentViewCourseDetailsPage />}
           />
+          <Route path="/payment-return" element={<PayPalPaymentReturnPage />} />
+          <Route path="/student-courses" element={<StudentCourses />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />

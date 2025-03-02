@@ -34,8 +34,6 @@ const StudentViewCoursesPage = () => {
     setLoadingState,
   } = useContext(StudentContext);
 
-  console.log("loading state :", loadingState);
-
   const createSearchParamsHelper = (filterParams) => {
     const queryParams = [];
 
@@ -58,8 +56,6 @@ const StudentViewCoursesPage = () => {
   useEffect(() => {
     setSort("price-lowtohigh");
     setFilters(JSON.parse(sessionStorage.getItem("filters")) || {});
-
-    console.log("filtered ");
   }, []);
 
   // remove the persisted filters from session storage when page loads :
@@ -75,8 +71,6 @@ const StudentViewCoursesPage = () => {
   }, [filters]); // Runs every time `filters` updates
 
   const handleFilterOnChange = (getSectionId, getCurrentOption) => {
-    console.log("console1", getSectionId, "console2", getCurrentOption);
-
     // Always create a new copy of filters to avoid mutating state directly
     let copyFilters = { ...filters };
 
@@ -109,9 +103,6 @@ const StudentViewCoursesPage = () => {
   };
 
   async function fetchAllStudentViewCourses(filters, sort) {
-    console.log("sort :", sort);
-    console.log("filters :", filters);
-
     const query = new URLSearchParams({
       ...filters,
       sortBy: sort,

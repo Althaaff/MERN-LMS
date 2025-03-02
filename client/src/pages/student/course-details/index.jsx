@@ -9,8 +9,12 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import VideoPlayer from "@/components/video-player";
+import { AuthContext } from "@/context/auth-context";
 import { StudentContext } from "@/context/student-context";
-import { fetchStudentCourseDetailsService } from "@/services";
+import {
+  createPaymentService,
+  fetchStudentCourseDetailsService,
+} from "@/services";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { CheckCircle, GlobeIcon, Lock, PlayCircle } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
@@ -26,6 +30,7 @@ const StudentViewCourseDetailsPage = () => {
     setLoadingState,
   } = useContext(StudentContext);
 
+  const { auth } = useContext(AuthContext);
   const { id } = useParams();
 
   const location = useLocation();
@@ -37,6 +42,8 @@ const StudentViewCourseDetailsPage = () => {
   const [showFreePreviewDialog, setShowFreePreviewDialog] = useState(false);
 
   const [clickedVideo, setClickedVideo] = useState(null);
+
+  const [approvalUrl, setApprovalUrl] = useState("");
 
   // while navigating /course/details flickering issue resolving:
   useEffect(() => {
@@ -62,8 +69,6 @@ const StudentViewCourseDetailsPage = () => {
     );
 
     if (response?.success) {
-      console.log("response", response);
-
       setStudentViewCourseDetails(response?.data);
 
       setLoadingState(false);
@@ -92,6 +97,10 @@ const StudentViewCourseDetailsPage = () => {
     return <Skeleton />;
   }
 
+  if (approvalUrl !== "") {
+    window.location.href = approvalUrl;
+  }
+
   // which video freePreview true :
   const getIndexOfFreePreviewUrl =
     studentViewCourseDetails !== null
@@ -105,6 +114,39 @@ const StudentViewCourseDetailsPage = () => {
     getIndexOfFreePreviewUrl,
     studentViewCourseDetails?.curriculam[getIndexOfFreePreviewUrl]?.videoUrl
   );
+
+  const handleCreatePayment = async () => {
+    const paymentPayload = {
+      userId: auth?.user._id,
+      userName: auth?.user.userName,
+      userEmail: auth?.user.userEmail,
+      orderStatus: "pending",
+      paymentMethod: "paypal",
+      paymentStatus: "initiated",
+      orderDate: new Date(),
+      paymentId: "",
+      payerId: "",
+      instructorId: studentViewCourseDetails?.instructorId,
+      instructorName: studentViewCourseDetails?.instructorName,
+      courseImage: studentViewCourseDetails?.image,
+      courseId: studentViewCourseDetails?._id,
+      coursePricing: studentViewCourseDetails?.pricing,
+    };
+
+    console.log("payment payload :", paymentPayload);
+
+    const response = await createPaymentService(paymentPayload);
+
+    if (response?.success) {
+      console.log("payment res", response);
+      sessionStorage.setItem(
+        "currentOrderId",
+        JSON.stringify(response?.data?.orderId)
+      );
+
+      setApprovalUrl(response?.data.approveUrl);
+    }
+  };
 
   return (
     <div className="mx-auto p-4">
@@ -228,7 +270,12 @@ const StudentViewCourseDetailsPage = () => {
                   $ {studentViewCourseDetails?.pricing}
                 </span>
 
-                <Button className="w-full cursor-pointer mt-4">Buy Now</Button>
+                <Button
+                  onClick={handleCreatePayment}
+                  className="w-full cursor-pointer mt-4"
+                >
+                  Buy Now
+                </Button>
               </div>
             </CardContent>
           </div>

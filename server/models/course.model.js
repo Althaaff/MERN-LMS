@@ -31,6 +31,7 @@ const courseSchema = new Schema(
         studentId: String,
         studentName: String,
         studentEmail: String,
+        paidAmount: String,
       },
     ],
 
