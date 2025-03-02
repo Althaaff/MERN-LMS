@@ -39,7 +39,10 @@ const StudentViewCommonHeader = () => {
         <div className="flex items-center space-x-4">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
-              <span className="font-extrabold md:text-xl text-[14px]">
+              <span
+                onClick={() => navigate("/student-courses")}
+                className="font-extrabold md:text-xl text-[14px] cursor-pointer"
+              >
                 My Courses
               </span>
               <TvMinimalPlay className="w-8 h-8 cursor-pointer" />

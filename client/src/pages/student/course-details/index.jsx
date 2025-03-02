@@ -131,6 +131,7 @@ const StudentViewCourseDetailsPage = () => {
       courseImage: studentViewCourseDetails?.image,
       courseId: studentViewCourseDetails?._id,
       coursePricing: studentViewCourseDetails?.pricing,
+      courseTitle: studentViewCourseDetails?.title,
     };
 
     console.log("payment payload :", paymentPayload);
