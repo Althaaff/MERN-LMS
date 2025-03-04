@@ -10,8 +10,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { filterOptions, sortOptions } from "@/config";
+import { AuthContext } from "@/context/auth-context";
 import { StudentContext } from "@/context/student-context";
-import { fetchStudentViewCourseListService } from "@/services";
+import {
+  fetchStudentViewCourseListService,
+  checkCoursePurchaseService,
+} from "@/services";
 import { Label } from "@radix-ui/react-dropdown-menu";
 
 import { ArrowUpDownIcon } from "lucide-react";
@@ -25,14 +29,14 @@ const StudentViewCoursesPage = () => {
 
   const navigate = useNavigate();
 
-  // console.log("search params: ", searchParams.has("category"));
-
   const {
     studentViewCoursesList,
     setStudentViewCoursesList,
     loadingState,
     setLoadingState,
   } = useContext(StudentContext);
+
+  const { auth } = useContext(AuthContext);
 
   const createSearchParamsHelper = (filterParams) => {
     const queryParams = [];
@@ -91,8 +95,6 @@ const StudentViewCoursesPage = () => {
         copyFilters[getSectionId] = copyFilters[getSectionId].filter(
           (id) => id !== getCurrentOption.id
         ); // Remove the item without mutating the original array
-
-        // console.log("[] :", copyFilters[getSectionId]);
       }
     }
 
@@ -122,6 +124,32 @@ const StudentViewCoursesPage = () => {
     if (filters !== null && sort !== null)
       fetchAllStudentViewCourses(filters, sort);
   }, [filters, sort]);
+
+  //  handle navigate
+  async function handleNavigate(getCurrentCourseId) {
+    let targetRoute = `/course-progress/${getCurrentCourseId}`;
+
+    try {
+      checkCoursePurchaseService(getCurrentCourseId, auth?.user?._id)
+        .then((response) => {
+          console.log("purchase response :", response);
+
+          if (!response?.success || !response?.data) {
+            // If not purchased navigate to the course details page :
+            navigate(`/course/details/${getCurrentCourseId}`, {
+              replace: true,
+            });
+          } else {
+            navigate(targetRoute);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching purchase info:", error);
+        });
+    } catch (error) {
+      console.error("Navigation failed:", error);
+    }
+  }
 
   return (
     <div className="mx-auto p-4">
@@ -211,9 +239,7 @@ const StudentViewCoursesPage = () => {
                   <Card
                     key={courseItem?._id}
                     className="cursor-pointer w-full"
-                    onClick={() =>
-                      navigate(`/course/details/${courseItem._id}`)
-                    }
+                    onClick={() => handleNavigate(courseItem?._id)}
                   >
                     <CardContent className="flex gap-4 p-4">
                       <div className="w-48 h-32 flex-shrink-0">
