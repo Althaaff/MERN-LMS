@@ -12,13 +12,14 @@ import VideoPlayer from "@/components/video-player";
 import { AuthContext } from "@/context/auth-context";
 import { StudentContext } from "@/context/student-context";
 import {
+  checkCoursePurchaseService,
   createPaymentService,
   fetchStudentCourseDetailsService,
 } from "@/services";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { CheckCircle, GlobeIcon, Lock, PlayCircle } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 const StudentViewCourseDetailsPage = () => {
   const {
@@ -31,19 +32,23 @@ const StudentViewCourseDetailsPage = () => {
   } = useContext(StudentContext);
 
   const { auth } = useContext(AuthContext);
+
   const { id } = useParams();
 
   const location = useLocation();
 
-  console.log("location :", location.pathname);
+  // console.log("location :", location.pathname);
 
   const [displayCurrentVideoFreePreview, setDisplayCurrentVideoFreePreview] =
     useState(null);
+
   const [showFreePreviewDialog, setShowFreePreviewDialog] = useState(false);
 
   const [clickedVideo, setClickedVideo] = useState(null);
 
   const [approvalUrl, setApprovalUrl] = useState("");
+
+  const navigate = useNavigate();
 
   // while navigating /course/details flickering issue resolving:
   useEffect(() => {
@@ -54,7 +59,7 @@ const StudentViewCourseDetailsPage = () => {
   }, [location.pathname]);
 
   const handleSetFreePreview = (getCurrentVideoInfo) => {
-    console.log("video info :", getCurrentVideoInfo);
+    // console.log("video info :", getCurrentVideoInfo);
 
     setDisplayCurrentVideoFreePreview(getCurrentVideoInfo?.videoUrl);
   };
@@ -63,9 +68,30 @@ const StudentViewCourseDetailsPage = () => {
     if (displayCurrentVideoFreePreview !== null) setShowFreePreviewDialog(true);
   }, [displayCurrentVideoFreePreview]);
 
-  const fetchStudentCourseDetails = async () => {
+  const fetchStudentViewCourseDetails = async () => {
+    // check student already bought course or not :
+    const checkCoursePurhcaseResponseInfo = await checkCoursePurchaseService(
+      currentCourseDetailsId,
+      auth?.user._id
+    );
+
+    // console.log(
+    //   "already course purchased ?",
+    //   checkCoursePurhcaseResponseInfo.data === true ? "Yes" : "No"
+    // );
+
+    if (
+      checkCoursePurhcaseResponseInfo?.success &&
+      checkCoursePurhcaseResponseInfo?.data
+    ) {
+      navigate(`/course-progress/${currentCourseDetailsId}`);
+
+      return;
+    }
+
     const response = await fetchStudentCourseDetailsService(
-      currentCourseDetailsId
+      currentCourseDetailsId,
+      auth?.user?._id
     );
 
     if (response?.success) {
@@ -79,19 +105,17 @@ const StudentViewCourseDetailsPage = () => {
     }
   };
 
-  // console.log(id);
-
-  useEffect(() => {
-    if (currentCourseDetailsId !== null) {
-      fetchStudentCourseDetails();
-    }
-  }, [currentCourseDetailsId]);
-
   useEffect(() => {
     if (id) {
       setCurrentCourseDetailsId(id);
     }
   }, [id]);
+
+  useEffect(() => {
+    if (currentCourseDetailsId !== null) {
+      fetchStudentViewCourseDetails();
+    }
+  }, [currentCourseDetailsId]);
 
   if (loadingState) {
     return <Skeleton />;
@@ -108,12 +132,6 @@ const StudentViewCourseDetailsPage = () => {
           (item) => item.freePreview
         )
       : null;
-
-  console.log(
-    "index of free preview and that video url :",
-    getIndexOfFreePreviewUrl,
-    studentViewCourseDetails?.curriculam[getIndexOfFreePreviewUrl]?.videoUrl
-  );
 
   const handleCreatePayment = async () => {
     const paymentPayload = {
@@ -134,12 +152,12 @@ const StudentViewCourseDetailsPage = () => {
       courseTitle: studentViewCourseDetails?.title,
     };
 
-    console.log("payment payload :", paymentPayload);
+    // console.log("payment payload :", paymentPayload);
 
     const response = await createPaymentService(paymentPayload);
 
     if (response?.success) {
-      console.log("payment res", response);
+      // console.log("payment res", response);
       sessionStorage.setItem(
         "currentOrderId",
         JSON.stringify(response?.data?.orderId)
@@ -310,7 +328,7 @@ const StudentViewCourseDetailsPage = () => {
                 (clickedVideoTitle) => clickedVideoTitle?.title !== clickedVideo
               )
               .map((filterItem, index) => {
-                console.log("free :", filterItem);
+                // console.log("free :", filterItem);
                 return (
                   <span
                     className="cursor-pointer text-[16px] font-bold p-3 bg-[#0059ff] rounded-md w-auto text-white hover:bg-[#0077ff] transition-all ease-in"
