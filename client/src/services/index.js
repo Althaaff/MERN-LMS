@@ -110,9 +110,9 @@ async function fetchStudentViewCourseListService(query) {
 }
 
 // fetching student course details service by ID :
-async function fetchStudentCourseDetailsService(courseId) {
+async function fetchStudentCourseDetailsService(courseId, studentId) {
   const { data } = await axiosInstance.get(
-    `/student/course/get/details/${courseId}`
+    `/student/course/get/details/${courseId}/${studentId}`
   );
 
   return data;
@@ -146,6 +146,15 @@ async function fetchStudentBoughtCoursesService(studentId) {
 
   return data;
 }
+// Check if the student has purchased the course
+async function checkCoursePurchaseService(courseId, studentId) {
+  const { data } = await axiosInstance.get(
+    `/student/course/purchase-info/${courseId}/${studentId}`
+  );
+
+  return data;
+}
+
 export {
   registerService,
   loginService,
@@ -160,4 +169,5 @@ export {
   fetchStudentViewCourseListService,
   fetchStudentCourseDetailsService,
   fetchStudentBoughtCoursesService,
+  checkCoursePurchaseService,
 };

@@ -1,4 +1,5 @@
 import { Course } from "../../models/course.model.js";
+import { StudentCourses } from "../../models/student.course.model.js";
 
 export const getAllStudentViewCourses = async (req, res) => {
   // console.log("query :", req.query);
@@ -56,15 +57,6 @@ export const getAllStudentViewCourses = async (req, res) => {
 
     const coursesList = await Course.find(filters).sort(sortParam);
 
-    // this logic is no needed bcoz if in the client side, user selected course is not available then we are showing the course not found :
-    // if (coursesList.length === 0) {
-    //   return res.status(404).json({
-    //     success: false,
-    //     message: "No courses found!",
-    //     data: [],
-    //   });
-    // }
-
     return res.status(200).json({
       success: true,
       data: coursesList,
@@ -102,5 +94,30 @@ export const getStudentViewCourseDetails = async (req, res) => {
       success: false,
       message: "some error occured!",
     });
+  }
+};
+
+export const checkCoursePurchaseInfo = async (req, res) => {
+  try {
+    const { id, studentId } = req.params;
+
+    const studentCourses = await StudentCourses.findOne({
+      userId: studentId,
+    });
+
+    const ifStudentAlreadyBoughtCurrentCourse = studentCourses
+      ? studentCourses.courses.findIndex((item) => item.courseId === id) > -1
+      : false;
+
+    return res.status(200).json({
+      success: true,
+      data: ifStudentAlreadyBoughtCurrentCourse,
+    });
+  } catch (error) {
+    console.log(error);
+
+    return res
+      .status(500)
+      .json({ success: false, message: "some error occured!" });
   }
 };

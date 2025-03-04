@@ -4,14 +4,16 @@ export const getCoursesByStudentId = async (req, res) => {
   try {
     const { studentId } = req.params;
 
-    console.log("id :", studentId);
+    // console.log("id :", studentId);
 
     const studentBoughtCourses = await StudentCourses.findOne({
       userId: studentId,
     });
 
+    console.log("studentBoughtCourses :", studentBoughtCourses);
+
     if (studentBoughtCourses) {
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         data: studentBoughtCourses.courses,
       });
