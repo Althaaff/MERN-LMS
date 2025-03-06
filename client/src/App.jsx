@@ -15,6 +15,7 @@ import PayPalPaymentReturnPage from "@/pages/student/payment-return";
 import StudentCourses from "@/pages/student/student-courses";
 import { useContext } from "react";
 import { Route, Routes } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
 
 function App() {
   const { auth } = useContext(AuthContext);
@@ -93,6 +94,12 @@ function App() {
 
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={4000}
+        pauseOnHover={true}
+      />
     </>
   );
 }

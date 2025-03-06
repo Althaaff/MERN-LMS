@@ -13,7 +13,13 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 import ReactPlayer from "react-player";
 
-const VideoPlayer = ({ width = "100%", height = "100%", url }) => {
+const VideoPlayer = ({
+  width = "100%",
+  height = "100%",
+  url,
+  onProgressUpdate,
+  progressData,
+}) => {
   const [playing, setPlaying] = useState(false);
   const [volume, setVolume] = useState(0.5);
   const [muted, setMuted] = useState(false);
@@ -22,11 +28,14 @@ const VideoPlayer = ({ width = "100%", height = "100%", url }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
 
+  console.log("played: ", played);
+
   const playerRef = useRef(null);
   const playerContainerRef = useRef(null);
   const controlsTimeOutRef = useRef(null);
 
   function handleSeekChange(newValue) {
+    console.log("new value :", newValue);
     setPlayed(newValue[0]);
     setSeeking(true);
     playerRef.current.seekTo(played);
@@ -61,11 +70,6 @@ const VideoPlayer = ({ width = "100%", height = "100%", url }) => {
   function handleVolumeChange(newValue) {
     setVolume(newValue[0]);
   }
-
-  function pad(string) {
-    return ("0" + string).slice(-2);
-  }
-
   // Handle fullscreen toggle
   const handleFullScreen = useCallback(() => {
     if (!document.fullscreenElement) {
@@ -98,6 +102,10 @@ const VideoPlayer = ({ width = "100%", height = "100%", url }) => {
     controlsTimeOutRef.current = setTimeout(() => setShowControls(false), 1000);
   }
 
+  function pad(string) {
+    return ("0" + string).slice(-2);
+  }
+
   function formatTime(seconds) {
     let date = new Date(seconds * 1000);
     const hh = date.getUTCHours();
@@ -109,6 +117,16 @@ const VideoPlayer = ({ width = "100%", height = "100%", url }) => {
     }
     return `${mm}:${ss}`;
   }
+
+  // one video completed :
+  useEffect(() => {
+    if (played === 1) {
+      onProgressUpdate({
+        ...progressData,
+        progressValue: played,
+      });
+    }
+  }, [played]);
 
   return (
     <div

@@ -313,7 +313,7 @@ const StudentViewCourseDetailsPage = () => {
             <DialogTitle>Course Preview</DialogTitle>
           </DialogHeader>
 
-          <div className="aspect-video rounded-lg flex items-center justify-center">
+          <div className="aspect-video rounded-md flex flex-col items-center justify-center">
             <VideoPlayer
               url={displayCurrentVideoFreePreview}
               width="480px"
