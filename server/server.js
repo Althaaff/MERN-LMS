@@ -10,6 +10,7 @@ import istructorCourseRoutes from "./routes/instructor-routes/course.routes.js";
 import studentViewCourseRoutes from "./routes/student-routes/student.routes.js";
 import studentViewOrderRoutes from "./routes/student-routes/order.routes.js";
 import studentCoursesRoutes from "./routes/student-routes/student-courses.routes.js";
+import studentCoursesProgressRoutes from "./routes/student-routes/course-progress.routes.js";
 
 const app = express();
 const PORT = process.env.PORT || 6000;
@@ -49,6 +50,9 @@ app.use("/student/order", studentViewOrderRoutes);
 
 // student bought courses  :
 app.use("/student/courses-bought", studentCoursesRoutes);
+
+// course progress :
+app.use("/student/course-progress", studentCoursesProgressRoutes);
 
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
