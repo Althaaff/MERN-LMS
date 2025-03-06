@@ -155,6 +155,43 @@ async function checkCoursePurchaseService(courseId, studentId) {
   return data;
 }
 
+// get current student course progress api service :
+async function getCurrentCourseProgressService(userId, courseId) {
+  const { data } = await axiosInstance.get(
+    `/student/course-progress/get/${userId}/${courseId}`
+  );
+
+  console.log("working!");
+
+  return data;
+}
+
+// mark lecture as viewed api service :
+async function markCurrentLectureAsViewedService(userId, courseId, lectureId) {
+  const { data } = await axiosInstance.post(
+    "/student/course-progress/mark-lecture-viewed",
+    {
+      userId,
+      courseId,
+      lectureId,
+    }
+  );
+
+  return data;
+}
+
+async function resetCurrentCourseProgressService(userId, courseId) {
+  const { data } = await axiosInstance.post(
+    "/student/course-progress/reset-progress",
+    {
+      userId,
+      courseId,
+    }
+  );
+
+  return data;
+}
+
 export {
   registerService,
   loginService,
@@ -170,4 +207,7 @@ export {
   fetchStudentCourseDetailsService,
   fetchStudentBoughtCoursesService,
   checkCoursePurchaseService,
+  getCurrentCourseProgressService,
+  markCurrentLectureAsViewedService,
+  resetCurrentCourseProgressService,
 };
