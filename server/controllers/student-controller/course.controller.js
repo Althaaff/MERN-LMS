@@ -2,56 +2,46 @@ import { Course } from "../../models/course.model.js";
 import { StudentCourses } from "../../models/student.course.model.js";
 
 export const getAllStudentViewCourses = async (req, res) => {
-  // console.log("query :", req.query);
   try {
     const {
-      category = [],
-      level = [],
-      primaryLanguage = [],
-      sortBY = "price-lowtohigh",
+      category = "",
+      level = "",
+      primaryLanguage = "",
+      sortBy = "price-lowtohigh",
     } = req.query;
 
     let filters = {};
 
-    if (category.length) {
-      filters.category = { $in: category.split(",") };
-
-      // console.log("filters: ", filters);
+    // Using $in in MongoDB Filter The $in operator in MongoDB checks if a field’s value matches any value in an array :
+    if (category) {
+      filters.category = { $in: category.split(",") }; // split method returns array in JS
     }
 
-    if (level.length) {
+    if (level) {
       filters.level = { $in: level.split(",") };
-
-      // console.log("filters: ", filters);
     }
 
-    if (primaryLanguage.length) {
+    if (primaryLanguage) {
       filters.primaryLanguage = { $in: primaryLanguage.split(",") };
-
-      // console.log("filters: ", filters);
     }
 
     let sortParam = {};
 
-    switch (sortBY) {
+    switch (sortBy.toLowerCase()) {
       case "price-lowtohigh":
-        sortParam.pricing = 1;
+        sortParam = { pricing: 1 };
         break;
-
       case "price-hightolow":
-        sortParam.pricing = -1;
+        sortParam = { pricing: -1 };
         break;
-
       case "title-atoz":
-        sortParam.title = 1;
+        sortParam = { title: 1 };
         break;
-
       case "title-ztoa":
-        sortParam.title = -1;
+        sortParam = { title: -1 };
         break;
-
       default:
-        sortParam.pricing = 1;
+        sortParam = { pricing: 1 };
         break;
     }
 
@@ -62,9 +52,10 @@ export const getAllStudentViewCourses = async (req, res) => {
       data: coursesList,
     });
   } catch (error) {
+    console.error("Error fetching courses:", error);
     res.status(500).json({
       success: false,
-      message: "some error occured!",
+      message: "Some error occurred!",
     });
   }
 };
