@@ -10,7 +10,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { StudentContext } from "@/context/student-context";
 import { Button } from "@/components/ui/button";
-import { Check, ChevronLeft, ChevronRight, Play } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Lock, Play } from "lucide-react";
 import { toast } from "react-toastify";
 import {
   Dialog,
@@ -33,7 +33,6 @@ const StudentViewCourseProgressPage = () => {
   const { studentCurrentCourseProgress, setStudentCurrentCourseProgress } =
     useContext(StudentContext);
   const [isChecking, setIsChecking] = useState(true);
-  const [lockCourse, setLockCourse] = useState(false);
   const [currentLecture, setCurrentLecture] = useState(null);
   const [showCourseCompleteDialog, setShowCourseCompleteDialog] =
     useState(false);
@@ -77,6 +76,7 @@ const StudentViewCourseProgressPage = () => {
     checkAccess();
   }, [id, auth?.user?._id, navigate, location.pathname]);
 
+  // fetch current course progress :
   async function fetchCurrentCourseProgress() {
     const response = await getCurrentCourseProgressService(auth?.user?._id, id);
 
@@ -94,24 +94,22 @@ const StudentViewCourseProgressPage = () => {
           return;
         }
 
-        if (response?.data?.progress.length === 0) {
-          setCurrentLecture(response?.data?.courseDetails?.curriculam[0]);
-        } else {
-          const lastLectureIndexViewedAsTrue =
-            response?.data?.progress.reduceRight((acc, obj, index) => {
-              return acc === -1 && obj.viewed ? index : acc;
-            }, -1);
+        const lastLectureIndexViewed = response?.data?.progress.reduceRight(
+          (acc, obj, index) => (acc === -1 && obj.viewed ? index : acc),
+          -1
+        );
 
-          setCurrentLecture(
-            response?.data?.courseDetails?.curriculam[
-              lastLectureIndexViewedAsTrue + 1
-            ]
-          );
-        }
+        // Unlock only the next lecture if first lecture is viewed :
+        const nextLectureIndex = lastLectureIndexViewed + 1;
+        console.log("this is next lecture :", nextLectureIndex);
+        setCurrentLecture(
+          response?.data?.courseDetails?.curriculam[nextLectureIndex] || null
+        );
       }
     }
   }
 
+  // update course progress :
   async function updateCourseProgress() {
     if (currentLecture) {
       const response = await markCurrentLectureAsViewedService(
@@ -121,7 +119,7 @@ const StudentViewCourseProgressPage = () => {
       );
 
       if (response?.success) {
-        fetchCurrentCourseProgress();
+        await fetchCurrentCourseProgress(); // refetch progress after marking lecture as viewed //
       }
     }
   }
@@ -246,22 +244,44 @@ const StudentViewCourseProgressPage = () => {
               <ScrollArea className="h-full">
                 <div className="p-4 space-y-4">
                   {studentCurrentCourseProgress?.courseDetails?.curriculam.map(
-                    (item) => (
-                      <div
-                        className="flex items-center space-x-2 text-sm text-white font-bold cursor-pointer hover:bg-[#3b82f6] p-2 rounded-lg"
-                        key={item._id}
-                      >
-                        {studentCurrentCourseProgress?.progress?.find(
+                    (item, index) => {
+                      const isViewed =
+                        studentCurrentCourseProgress?.progress?.some(
                           (progressItem) =>
-                            progressItem?.lectureId === item?._id
-                        )?.viewed ? (
-                          <Check className="w-4 h-4 text-green-500" />
-                        ) : (
-                          <Play className="w-4 h-4" />
-                        )}
-                        <span>{item?.title}</span>
-                      </div>
-                    )
+                            progressItem?.lectureId === item?._id &&
+                            progressItem.viewed
+                        );
+
+                      // lock if previous lecture is not viewed:
+                      const isLocked =
+                        index > 0 &&
+                        !studentCurrentCourseProgress?.progress[index - 1]
+                          ?.viewed;
+
+                      console.log("isLocked :", isLocked);
+
+                      return (
+                        <div
+                          key={item._id}
+                          className={`flex items-center space-x-2 text-sm font-bold p-2 rounded-lg 
+                           ${
+                             isLocked
+                               ? "text-gray-500 cursor-not-allowed"
+                               : "text-white cursor-pointer hover:bg-[#3b82f6]"
+                           }`}
+                          onClick={() => !isLocked && setCurrentLecture(item)}
+                        >
+                          {isViewed ? (
+                            <Check className="w-4 h-4 text-green-500" />
+                          ) : isLocked ? (
+                            <Lock className="w-4 h-4 text-gray-500" />
+                          ) : (
+                            <Play className="w-4 h-4" />
+                          )}
+                          <span>{item?.title}</span>
+                        </div>
+                      );
+                    }
                   )}
                 </div>
               </ScrollArea>
@@ -289,7 +309,7 @@ const StudentViewCourseProgressPage = () => {
 
       {/* Course Completion Dialog */}
       <Dialog open={showCourseCompleteDialog}>
-        <DialogContent className="sm:w-[425px]">
+        <DialogContent showOverlay={false} className="sm:w-[425px]">
           <DialogHeader>
             <DialogTitle>Congratulations!</DialogTitle>
           </DialogHeader>
