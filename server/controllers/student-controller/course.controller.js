@@ -76,9 +76,13 @@ export const getStudentViewCourseDetails = async (req, res) => {
       });
     }
 
+    // Get total enrolled students count
+    const enrolledStudentsCount = courseDetails.students.length;
+
     return res.status(200).json({
       success: true,
       data: courseDetails,
+      totalStudents: enrolledStudentsCount, // Include total students //
     });
   } catch (error) {
     res.status(500).json({

@@ -169,23 +169,30 @@ const capturePaymentAndFinalizeOrder = async (req, res) => {
 
       await newStudentCourses.save();
     }
+    const courseBeforeUpdate = await Course.findById(order.courseId);
+    console.log("Before Update:", courseBeforeUpdate);
 
-    //update the course schema students :
-    await Course.findByIdAndUpdate(order.courseId, {
-      $addToSet: {
-        students: {
-          studentId: order.userId,
-          studentName: order.userName,
-          studentEmail: order.userEmail,
-          paidAmount: order.coursePricing,
+    const updatedCourse = await Course.findByIdAndUpdate(
+      order.courseId,
+      {
+        $push: {
+          students: {
+            studentId: order.userId,
+            studentName: order.userName,
+            studentEmail: order.userEmail,
+            paidAmount: order.coursePricing,
+          },
         },
       },
-    });
+      { new: true } // This ensures the updated document is returned
+    );
+    await updatedCourse.save();
 
+    console.log("After Update:", updatedCourse.students.length);
     return res.status(201).json({
       success: true,
-      message: "order confirmed!",
-      data: order,
+      message: "Order confirmed!",
+      data: updatedCourse,
     });
   } catch (error) {
     console.log(error);
