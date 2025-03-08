@@ -1,3 +1,4 @@
+import Spinner from "@/components/spinner/Spinner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -7,19 +8,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Skeleton } from "@/components/ui/skeleton";
 import VideoPlayer from "@/components/video-player";
 import { AuthContext } from "@/context/auth-context";
 import { StudentContext } from "@/context/student-context";
 import {
-  checkCoursePurchaseService,
   createPaymentService,
   fetchStudentCourseDetailsService,
 } from "@/services";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { CheckCircle, GlobeIcon, Lock, PlayCircle } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 
 const StudentViewCourseDetailsPage = () => {
   const {
@@ -37,8 +36,6 @@ const StudentViewCourseDetailsPage = () => {
 
   const location = useLocation();
 
-  // console.log("location :", location.pathname);
-
   const [displayCurrentVideoFreePreview, setDisplayCurrentVideoFreePreview] =
     useState(null);
 
@@ -47,8 +44,6 @@ const StudentViewCourseDetailsPage = () => {
   const [clickedVideo, setClickedVideo] = useState(null);
 
   const [approvalUrl, setApprovalUrl] = useState("");
-
-  const navigate = useNavigate();
 
   // while navigating /course/details flickering issue resolving:
   useEffect(() => {
@@ -68,57 +63,34 @@ const StudentViewCourseDetailsPage = () => {
     if (displayCurrentVideoFreePreview !== null) setShowFreePreviewDialog(true);
   }, [displayCurrentVideoFreePreview]);
 
-  const fetchStudentViewCourseDetails = async () => {
-    // check student already bought course or not :
-    const checkCoursePurhcaseResponseInfo = await checkCoursePurchaseService(
-      currentCourseDetailsId,
-      auth?.user._id
-    );
-
-    // console.log(
-    //   "already course purchased ?",
-    //   checkCoursePurhcaseResponseInfo.data === true ? "Yes" : "No"
-    // );
-
-    if (
-      checkCoursePurhcaseResponseInfo?.success &&
-      checkCoursePurhcaseResponseInfo?.data
-    ) {
-      navigate(`/course-progress/${currentCourseDetailsId}`);
-
-      return;
-    }
-
-    const response = await fetchStudentCourseDetailsService(
-      currentCourseDetailsId,
-      auth?.user?._id
-    );
-
-    if (response?.success) {
-      setStudentViewCourseDetails(response?.data);
-
-      setLoadingState(false);
-    } else {
-      setStudentViewCourseDetails(null);
-
-      setLoadingState(false);
-    }
-  };
-
   useEffect(() => {
-    if (id) {
-      setCurrentCourseDetailsId(id);
-    }
+    console.log(currentCourseDetailsId === id ? "Yes" : "No");
+    if (id) setCurrentCourseDetailsId(id);
   }, [id]);
 
   useEffect(() => {
-    if (currentCourseDetailsId !== null) {
+    if (id) {
+      setStudentViewCourseDetails(null);
+      setLoadingState(true);
+
+      const fetchStudentViewCourseDetails = async () => {
+        const response = await fetchStudentCourseDetailsService(
+          id,
+          auth?.user?._id
+        );
+        if (response.success) {
+          setStudentViewCourseDetails(response?.data);
+
+          setLoadingState(false);
+        }
+      };
       fetchStudentViewCourseDetails();
     }
-  }, [currentCourseDetailsId]);
+  }, [id, auth]);
 
   if (loadingState) {
-    return <Skeleton />;
+    console.log("running still..!");
+    return <Spinner />;
   }
 
   if (approvalUrl !== "") {
@@ -152,12 +124,9 @@ const StudentViewCourseDetailsPage = () => {
       courseTitle: studentViewCourseDetails?.title,
     };
 
-    // console.log("payment payload :", paymentPayload);
-
     const response = await createPaymentService(paymentPayload);
 
     if (response?.success) {
-      // console.log("payment res", response);
       sessionStorage.setItem(
         "currentOrderId",
         JSON.stringify(response?.data?.orderId)
