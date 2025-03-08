@@ -12,6 +12,7 @@ const lectureSchema = new Schema({
 const courseSchema = new Schema(
   {
     instructorId: String,
+    courseId: String,
     instructorName: String,
     date: Date,
     title: String,
