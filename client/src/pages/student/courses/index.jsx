@@ -20,12 +20,13 @@ import { Label } from "@radix-ui/react-dropdown-menu";
 
 import { ArrowUpDownIcon } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 const StudentViewCoursesPage = () => {
   const [sort, setSort] = useState("price-lowtohigh");
   const [filters, setFilters] = useState({});
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
 
   const navigate = useNavigate();
 
@@ -78,20 +79,22 @@ const StudentViewCoursesPage = () => {
     // Always create a new copy of filters to avoid mutating state directly
     let copyFilters = { ...filters };
 
-    // Check if the section exists in filters
     if (!copyFilters[getSectionId]) {
       copyFilters[getSectionId] = [getCurrentOption.id];
+      console.log("Added first filter option! ");
     } else {
       const indexOfCurrentOption = copyFilters[getSectionId].indexOf(
         getCurrentOption.id
       );
 
       if (indexOfCurrentOption === -1) {
+        console.log("Added another filter option!");
         copyFilters[getSectionId] = [
           ...copyFilters[getSectionId],
           getCurrentOption.id,
-        ]; // Create a new array to trigger state updates
+        ];
       } else {
+        console.log("Removed filter option!");
         copyFilters[getSectionId] = copyFilters[getSectionId].filter(
           (id) => id !== getCurrentOption.id
         ); // Remove the item without mutating the original array
@@ -157,8 +160,26 @@ const StudentViewCoursesPage = () => {
     setSearchParams(new URLSearchParams());
     sessionStorage.removeItem("filters");
 
-    console.log("filters cleared!");
+    setSort("price-lowtohigh");
+
+    // console.log("filters cleared!");
   };
+
+  useEffect(() => {
+    const filtersFromState = location.state?.filters;
+    const filtersFromStorage =
+      JSON.parse(sessionStorage.getItem("filters")) || {};
+
+    setFilters(filtersFromState || filtersFromStorage);
+    setSort("price-lowtohigh");
+  }, [location.state]);
+
+  // Remove the persisted filters from session storage when page unmounts :
+  useEffect(() => {
+    return () => {
+      sessionStorage.removeItem("filters");
+    };
+  }, []);
 
   return (
     <div className="mx-auto p-4">
