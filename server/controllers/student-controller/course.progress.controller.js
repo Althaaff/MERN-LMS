@@ -1,6 +1,7 @@
 import { CourseProgress } from "../../models/course.progress.model.js";
 import { Course } from "../../models/course.model.js";
 import { StudentCourses } from "../../models/student.course.model.js";
+import mongoose from "mongoose";
 
 // mark current course as viewed :
 export const markCurrentLectureAsViewed = async (req, res) => {
@@ -56,7 +57,7 @@ export const markCurrentLectureAsViewed = async (req, res) => {
     // check all the lectures are view or not :
     const allLecturesViewed =
       userCourseProgress?.lecturesProgress?.length ===
-        course.curriculam.length &&
+        course?.curriculam?.length &&
       userCourseProgress?.lecturesProgress?.every((item) => item.viewed);
 
     if (allLecturesViewed) {
@@ -84,6 +85,13 @@ export const markCurrentLectureAsViewed = async (req, res) => {
 export const getCurrentCourseProgress = async (req, res) => {
   try {
     const { userId, courseId } = req.params;
+    console.log("courseId: ", courseId);
+    if (!userId || !courseId) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID and Course ID are required!",
+      });
+    }
 
     const studentPurchasedCourses = await StudentCourses.findOne({ userId });
 
@@ -100,32 +108,33 @@ export const getCurrentCourseProgress = async (req, res) => {
       });
     }
 
-    const currentUserCourseProgress = await CourseProgress.findOne({
+    // get the course :
+    const course = await Course.findById(courseId);
+
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        message: "course not found!",
+      });
+    }
+
+    const userCourseProgress = await CourseProgress.findOne({
       userId,
       courseId,
     });
 
-    console.log("progress consoled :", currentUserCourseProgress);
-
+    // Get user's course progress
     if (
-      !currentUserCourseProgress ||
-      currentUserCourseProgress?.lecturesProgress?.length === 0
+      !userCourseProgress ||
+      userCourseProgress.lecturesProgress.length === 0
     ) {
-      const course = await Course.findById(courseId);
-
-      if (!course) {
-        return res.status(404).json({
-          success: false,
-          message: "Course not found!",
-        });
-      }
-
       return res.status(200).json({
         success: true,
         message: "No progress found, you can start watching the course",
         data: {
           courseDetails: course,
-          progress: [],
+          progress: [], // keep empty array //
+          // progressPercentage: 0, // no progress initially //
           isPurchased: true,
         },
       });
@@ -133,13 +142,13 @@ export const getCurrentCourseProgress = async (req, res) => {
 
     const courseDetails = await Course.findById(courseId);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: {
         courseDetails,
-        progress: currentUserCourseProgress.lecturesProgress,
-        completed: currentUserCourseProgress.completed,
-        completionDate: currentUserCourseProgress.completionDate,
+        progress: userCourseProgress.lecturesProgress,
+        completed: userCourseProgress.completed,
+        completionDate: userCourseProgress.completionDate,
         isPurchased: true,
       },
     });
@@ -153,7 +162,76 @@ export const getCurrentCourseProgress = async (req, res) => {
   }
 };
 
-// reset course progress :
+// get progress bar percentage based course lecture views :
+export const getAllCourseProgressPercentage = async (req, res) => {
+  const userId = req.user?._id;
+  console.log("User:", req.user);
+
+  if (!userId) {
+    return res.status(404).json({
+      success: false,
+      message: "User ID is required!",
+    });
+  }
+
+  // Fetch user's purchased courses
+  const studentPurchasedCourses = await StudentCourses.findOne({ userId });
+
+  if (!studentPurchasedCourses) {
+    return res.status(200).json({
+      success: true,
+      message: "Please purchase a course before accessing it.",
+      data: [],
+    });
+  }
+
+  // Fetch all purchased courses
+  const purchasedCourseIds = studentPurchasedCourses.courses.map(
+    (item) => item.courseId
+  );
+
+  // Fetch course progress for the user's purchased courses
+  const userProgressList = await CourseProgress.find({
+    userId: new mongoose.Types.ObjectId(userId),
+    courseId: { $in: purchasedCourseIds },
+  });
+
+  console.log("User progress list:", userProgressList);
+
+  // Fetch total lectures for each purchased course
+  const allCourses = await Course.find({ _id: { $in: purchasedCourseIds } });
+
+  const progressData = allCourses.map((course) => {
+    const userCourseProgress = userProgressList.find((progress) =>
+      progress?.courseId.equals(course?._id)
+    );
+
+    const totalLectures = course?.curriculam?.length || 0;
+    const viewedLectures =
+      userCourseProgress?.lecturesProgress?.filter(
+        (lecture) => lecture?.viewed === true
+      ).length || 0;
+
+    const progressPercentage =
+      totalLectures > 0
+        ? Math.round((viewedLectures / totalLectures) * 100)
+        : 0;
+
+    return {
+      courseId: course._id,
+      progressPercentage,
+    };
+  });
+
+  console.log("Progress Data:", progressData);
+
+  return res.status(200).json({
+    success: true,
+    purchased: true, // Explicitly returning purchased status
+    data: progressData,
+  });
+};
+
 export const resetCurrentCourseProgress = async (req, res) => {
   try {
     const { userId, courseId } = req.body;
