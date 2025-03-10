@@ -136,6 +136,8 @@ export async function captureAndFinalizePaymentService(
     orderId,
   });
 
+  console.log("payment data :", data);
+
   return data;
 }
 
@@ -162,6 +164,18 @@ async function getCurrentCourseProgressService(userId, courseId) {
   );
 
   console.log("working!");
+
+  return data;
+}
+
+async function getAllCourseProgressPercentage() {
+  const { data } = await axiosInstance.get(
+    `/student/course-progress/get/progress-percentage`
+  );
+
+  console.log("data :", data);
+
+  console.log("progress percentage Api called!");
 
   return data;
 }
@@ -210,4 +224,5 @@ export {
   getCurrentCourseProgressService,
   markCurrentLectureAsViewedService,
   resetCurrentCourseProgressService,
+  getAllCourseProgressPercentage,
 };
