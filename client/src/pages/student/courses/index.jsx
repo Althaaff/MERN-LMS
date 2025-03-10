@@ -1,3 +1,4 @@
+import Spinner from "@/components/spinner/Spinner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -8,16 +9,15 @@ import {
   DropdownMenuRadioItem,
   DropdownMenu,
 } from "@/components/ui/dropdown-menu";
-import { Skeleton } from "@/components/ui/skeleton";
 import { filterOptions, sortOptions } from "@/config";
 import { AuthContext } from "@/context/auth-context";
 import { StudentContext } from "@/context/student-context";
 import {
   fetchStudentViewCourseListService,
   checkCoursePurchaseService,
+  getAllCourseProgressPercentage,
 } from "@/services";
 import { Label } from "@radix-ui/react-dropdown-menu";
-
 import { ArrowUpDownIcon } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
@@ -27,8 +27,9 @@ const StudentViewCoursesPage = () => {
   const [filters, setFilters] = useState({});
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
-
+  const [progressPercentage, setProgressPercentage] = useState([]);
   const navigate = useNavigate();
+  const [purchased, setPurchased] = useState(false);
 
   const {
     studentViewCoursesList,
@@ -52,6 +53,22 @@ const StudentViewCoursesPage = () => {
 
     return queryParams.join("&");
   };
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await getAllCourseProgressPercentage();
+        if (response?.success) {
+          setPurchased(response?.purchased); // Set purchased state
+          setProgressPercentage(response?.purchased ? response?.data : []); // Only store progress if purchased
+        }
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      }
+    };
+
+    fetchCourses();
+  }, []);
 
   useEffect(() => {
     const buildQueryStringForFilters = createSearchParamsHelper(filters);
@@ -88,7 +105,7 @@ const StudentViewCoursesPage = () => {
       );
 
       if (indexOfCurrentOption === -1) {
-        console.log("Added another filter option!");
+        // console.log("Added another filter option!");
         copyFilters[getSectionId] = [
           ...copyFilters[getSectionId],
           getCurrentOption.id,
@@ -113,12 +130,17 @@ const StudentViewCoursesPage = () => {
       sortBy: sort,
     });
 
-    const response = await fetchStudentViewCourseListService(query);
-
-    // console.log("respons: ", response);
-
-    if (response?.success) {
-      setStudentViewCoursesList(response?.data);
+    setLoadingState(true);
+    try {
+      const response = await fetchStudentViewCourseListService(query);
+      // console.log("respons: ", response);
+      if (response?.success) {
+        setStudentViewCoursesList(response?.data);
+        setLoadingState(false);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
       setLoadingState(false);
     }
   }
@@ -188,7 +210,6 @@ const StudentViewCoursesPage = () => {
         <aside className="w-full md:w-64 space-y-4">
           <div>
             {/* filters */}
-
             {Object.keys(filterOptions).map((keyItem) => {
               // console.log(keyItem);
 
@@ -271,56 +292,99 @@ const StudentViewCoursesPage = () => {
 
           <div className="space-y-4">
             {studentViewCoursesList && studentViewCoursesList.length > 0 ? (
-              studentViewCoursesList.map((courseItem) => (
-                <>
-                  <Card
-                    key={courseItem?._id}
-                    className="cursor-pointer w-full"
-                    onClick={() => handleNavigate(courseItem?._id)}
-                  >
-                    <CardContent className="flex gap-4 p-4">
-                      <div className="w-48 h-32 flex-shrink-0">
-                        <img
-                          src={courseItem?.image}
-                          alt="course image"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-
-                      <div className="flex-1">
-                        <CardTitle className="text-xl mb-2">
-                          {courseItem?.title}
-                        </CardTitle>
-
-                        <p className="text-sm text-gray-500 font-bold mb-1">
-                          Created By {courseItem.instructorName}
-                        </p>
-
-                        <div className="flex items-center">
-                          <p className="text-[16px] text-gray-600 mb-2">{`${
-                            courseItem.curriculam.length
-                          } ${
-                            courseItem.curriculam.length <= 1
-                              ? "Lecture"
-                              : "Lectures"
-                          } - ${courseItem?.level.toUpperCase()} Lectures `}</p>
-
-                          <span className="text-[12px] text-gray-600 ml-2 mb-2 p-[3px] bg-white-300 border rounded-md font-extrabold hover:bg-white">
-                            {courseItem?.level}
-                          </span>
+              studentViewCoursesList.map((courseItem) => {
+                return (
+                  <>
+                    <Card
+                      key={courseItem?._id}
+                      className="cursor-pointer w-full"
+                      onClick={() => handleNavigate(courseItem?._id)}
+                    >
+                      <CardContent className="flex gap-4 p-4">
+                        <div className="w-48 h-32 flex-shrink-0">
+                          <img
+                            src={courseItem?.image}
+                            alt="course image"
+                            className="w-full h-full object-cover"
+                          />
                         </div>
-                        <p className="font-bold text-lg">
-                          ${courseItem?.pricing}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </>
-              ))
+
+                        <div className="flex-1">
+                          <CardTitle className="text-xl mb-2">
+                            {courseItem?.title}
+                          </CardTitle>
+
+                          <p className="text-sm text-gray-500 font-bold mb-1">
+                            Created By {courseItem.instructorName}
+                          </p>
+
+                          <div className="flex items-center">
+                            <p className="text-[16px] text-gray-600 mb-2">{`${
+                              courseItem.curriculam.length
+                            } ${
+                              courseItem.curriculam.length <= 1
+                                ? "Lecture"
+                                : "Lectures"
+                            } - ${courseItem?.level.toUpperCase()} Lectures `}</p>
+
+                            <span className="text-[12px] text-gray-600 ml-2 mb-2 p-[3px] bg-white-300 border rounded-md font-extrabold hover:bg-white">
+                              {courseItem?.level}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <p className="font-bold text-lg">
+                              ${courseItem?.pricing}
+                            </p>
+                            {purchased &&
+                              (() => {
+                                const currentProgress =
+                                  progressPercentage?.find(
+                                    (progress) =>
+                                      progress.courseId === courseItem._id
+                                  );
+
+                                if (!currentProgress) return null; // If no progress found, don't render anything
+
+                                const percentage =
+                                  currentProgress.progressPercentage ?? 0;
+
+                                return (
+                                  <>
+                                    <div className="relative w-[20%] h-[8px] bg-gray-200 rounded-md overflow-hidden gap-2">
+                                      <div
+                                        className={
+                                          percentage === 100
+                                            ? "bg-green-600"
+                                            : percentage <= 10
+                                            ? "bg-red-600"
+                                            : "bg-blue-400"
+                                        }
+                                        style={{
+                                          width: `${percentage}%`,
+                                          height: "100%",
+                                          transition: "width 1s ease-in-out",
+                                        }}
+                                      ></div>
+                                    </div>
+
+                                    <p className="font-normal text-sm">
+                                      {percentage}
+                                      <span className="text-blue-700">%</span>
+                                    </p>
+                                  </>
+                                );
+                              })()}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </>
+                );
+              })
             ) : loadingState ? (
-              <Skeleton />
+              <Spinner />
             ) : (
-              <h1 className="font-extrabold text-2xl mr-2">
+              <h1 className="font-extrabold flex items-center justify-center text-2xl mr-2">
                 No Courses found!
               </h1>
             )}
