@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 // import { AuthContext } from "@/context/auth-context";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import banner from "../../../../public/image.png";
 import { courseCategories } from "@/config";
 import { StudentContext } from "@/context/student-context";
@@ -10,6 +10,8 @@ import {
 } from "@/services";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "@/context/auth-context";
+import Spinner from "@/components/spinner/Spinner";
+import ImageSlider from "@/components/Slider";
 
 const StudentHomePage = () => {
   // const { resetCredential } = useContext(AuthContext);
@@ -23,19 +25,29 @@ const StudentHomePage = () => {
 
   const location = useLocation();
 
+  const [loading, setLoading] = useState(false);
+
   async function fetchAllStudentViewCourses() {
-    const response = await fetchStudentViewCourseListService();
-
-    console.log("student courses :", response.data);
-
-    if (response?.success) {
-      setStudentViewCoursesList(response?.data);
+    setLoading(true);
+    try {
+      const response = await fetchStudentViewCourseListService();
+      if (response?.success) {
+        setStudentViewCoursesList(response?.data);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
     }
   }
 
   useEffect(() => {
     fetchAllStudentViewCourses();
   }, []);
+
+  if (loading) {
+    return <Spinner />;
+  }
 
   async function handleCourseNavigate(getCurrentCourseId) {
     let targetRoute = `/course-progress/${getCurrentCourseId}`;
@@ -79,28 +91,7 @@ const StudentHomePage = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <section className="flex flex-col lg:flex-row items-center justify-between py-8 px-4 lg:px-8">
-        <div className="lg:w-1/2 lg:pr-12">
-          <h1 className="text-5xl lg:text-5xl font-bold text-gray-900 leading-tight">
-            Welcome to Your Learning Journey!
-          </h1>
-
-          <p className="text-xl">
-            Skills for your present and future. Get Started with US
-          </p>
-        </div>
-
-        <div className="lg:w-full mb-8 lg:mb-0">
-          <img
-            src={banner}
-            width={600}
-            height={600}
-            className="w-full h-auto shadow-lg"
-            alt=""
-          />
-        </div>
-      </section>
-
+      <ImageSlider />
       <section className="py-8 px-4 lg:px-8 bg-gray-100">
         <h1 className="text-2xl font-normal text-black mb-6">
           Course Categories
@@ -119,7 +110,7 @@ const StudentHomePage = () => {
       </section>
 
       <section className="py-12 px-4 lg:px-8 bg-gray-100">
-        <h1 className="text-2xl text-black font-normal pl-20 mb-8 text-left">
+        <h1 className="text-2xl text-black font-normal mb-8 text-left">
           Featured Courses
         </h1>
 
@@ -153,7 +144,9 @@ const StudentHomePage = () => {
               </div>
             ))
           ) : (
-            <h1 className="">Courses not found!</h1>
+            <h1 className="text-black text-2xl flex justify-center items-center">
+              Course Not Found!
+            </h1>
           )}
         </div>
       </section>
