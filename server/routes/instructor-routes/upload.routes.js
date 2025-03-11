@@ -83,6 +83,11 @@ router.post("/bulk-upload", upload.array("files", 10), async (req, res) => {
       console.log("bulk error!", error);
     });
 
+    // Delete all uploaded files locally
+    await Promise.all(
+      req.files.map((fileItem) => deleteLocalFile(fileItem.path))
+    );
+
     return res.status(200).json({
       success: true,
       data: result,
@@ -95,6 +100,11 @@ router.post("/bulk-upload", upload.array("files", 10), async (req, res) => {
       success: false,
       message: "Error occured in bulk upload!",
     });
+  } finally {
+    // Ensure local cleanup even in case of failure :
+    await Promise.all(
+      req.files.map((fileItem) => deleteLocalFile(fileItem.path))
+    );
   }
 });
 
