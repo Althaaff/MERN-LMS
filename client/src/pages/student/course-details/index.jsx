@@ -12,13 +12,15 @@ import VideoPlayer from "@/components/video-player";
 import { AuthContext } from "@/context/auth-context";
 import { StudentContext } from "@/context/student-context";
 import {
+  checkCoursePurchaseService,
   createPaymentService,
   fetchStudentCourseDetailsService,
 } from "@/services";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { CheckCircle, GlobeIcon, Lock, PlayCircle } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const StudentViewCourseDetailsPage = () => {
   const {
@@ -36,6 +38,8 @@ const StudentViewCourseDetailsPage = () => {
 
   const location = useLocation();
 
+  const navigate = useNavigate();
+
   const [displayCurrentVideoFreePreview, setDisplayCurrentVideoFreePreview] =
     useState(null);
 
@@ -45,6 +49,12 @@ const StudentViewCourseDetailsPage = () => {
 
   const [approvalUrl, setApprovalUrl] = useState("");
 
+  const [purchased, setPurchased] = useState(false);
+
+  const [previewCompleted, setPreviewCompleted] = useState(false);
+
+  console.log("previewCompleted: ", previewCompleted);
+
   // while navigating /course/details flickering issue resolving:
   useEffect(() => {
     if (!location.pathname.includes("/course/details")) {
@@ -52,6 +62,26 @@ const StudentViewCourseDetailsPage = () => {
       setCurrentCourseDetailsId(null);
     }
   }, [location.pathname]);
+
+  useEffect(() => {
+    const checkAccess = async () => {
+      if (!id || !auth.user?._id) {
+        return;
+      }
+
+      const purchaseResponse = await checkCoursePurchaseService(
+        id,
+        auth?.user?._id
+      );
+      const isPurchaseResponseSuccess = purchaseResponse?.success;
+
+      if (isPurchaseResponseSuccess && purchaseResponse?.data) {
+        setPurchased(true);
+      }
+    };
+
+    checkAccess();
+  }, [id, navigate, auth?.user?._id]);
 
   const handleSetFreePreview = (getCurrentVideoInfo) => {
     // console.log("video info :", getCurrentVideoInfo);
@@ -86,7 +116,7 @@ const StudentViewCourseDetailsPage = () => {
       };
       fetchStudentViewCourseDetails();
     }
-  }, [id, auth]);
+  }, [id, auth?.user?._id]);
 
   if (loadingState) {
     console.log("running still..!");
@@ -136,6 +166,13 @@ const StudentViewCourseDetailsPage = () => {
     }
   };
 
+  // Define onProgressUpdate handler (resolved issue):
+  const handlePreviewProgressUpdate = (progressData) => {
+    // console.log("Free preview progress update:", progressData);
+    if (progressData.progressValue === 1) {
+      setPreviewCompleted(true);
+    }
+  };
   return (
     <div className="mx-auto p-4">
       <div className="bg-gray-900 text-white p-8 rounded-t-lg">
@@ -251,6 +288,8 @@ const StudentViewCourseDetailsPage = () => {
                   }
                   width="480px"
                   height="240px"
+                  onProgressUpdate={handlePreviewProgressUpdate}
+                  progressData={{}} // Pass an empty object if progressData isn’t needed
                 />
               </div>
               <div className="mb-4">
@@ -259,10 +298,16 @@ const StudentViewCourseDetailsPage = () => {
                 </span>
 
                 <Button
-                  onClick={handleCreatePayment}
+                  onClick={() => {
+                    if (purchased) {
+                      navigate(`/course-progress/${id}`); // redirect to course progress
+                    } else {
+                      handleCreatePayment();
+                    }
+                  }}
                   className="w-full cursor-pointer mt-4"
                 >
-                  Buy Now
+                  {purchased ? "Continue Learning" : "Buy Now"}
                 </Button>
               </div>
             </CardContent>
@@ -285,6 +330,8 @@ const StudentViewCourseDetailsPage = () => {
           <div className="aspect-video rounded-md flex flex-col items-center justify-center">
             <VideoPlayer
               url={displayCurrentVideoFreePreview}
+              onProgressUpdate={handlePreviewProgressUpdate}
+              progressData={{}}
               width="480px"
               height="240px"
             />
@@ -297,7 +344,7 @@ const StudentViewCourseDetailsPage = () => {
                 (clickedVideoTitle) => clickedVideoTitle?.title !== clickedVideo
               )
               .map((filterItem, index) => {
-                // console.log("free :", filterItem);
+                console.log("free :", filterItem);
                 return (
                   <span
                     className="cursor-pointer text-[16px] font-bold p-3 bg-[#0059ff] rounded-md w-auto text-white hover:bg-[#0077ff] transition-all ease-in"

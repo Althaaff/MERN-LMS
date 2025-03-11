@@ -1,14 +1,17 @@
+import Spinner from "@/components/spinner/Spinner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { AuthContext } from "@/context/auth-context";
 import { StudentContext } from "@/context/student-context";
 import { fetchStudentBoughtCoursesService } from "@/services";
 import { Watch } from "lucide-react";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const StudentCourses = () => {
   const { auth } = useContext(AuthContext);
+
+  const [loading, setLoading] = useState(false);
 
   const { studentBoughtCoursesList, setStudentBoughtCoursesList } =
     useContext(StudentContext);
@@ -18,18 +21,29 @@ const StudentCourses = () => {
   const navigate = useNavigate();
 
   async function fetchStudentBoughtCourses() {
-    const response = await fetchStudentBoughtCoursesService(auth.user?._id);
+    setLoading(true);
+    try {
+      const response = await fetchStudentBoughtCoursesService(auth.user?._id);
 
-    console.log("response :", response);
+      console.log("response :", response);
 
-    if (response?.success) {
-      setStudentBoughtCoursesList(response?.data);
+      if (response?.success) {
+        setStudentBoughtCoursesList(response?.data);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
     }
   }
 
   useEffect(() => {
     fetchStudentBoughtCourses();
   }, []);
+
+  if (loading) {
+    return <Spinner />;
+  }
 
   return (
     <div className="p-4">
