@@ -16,6 +16,7 @@ import {
   updateCourseByIdService,
 } from "@/services";
 import { TabsContent } from "@radix-ui/react-tabs";
+import { ArrowLeft } from "lucide-react";
 import { useContext, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -117,18 +118,6 @@ const AddNewCoursePage = () => {
       curriculam: courseCurriculamFormData,
       isPublished: true,
     };
-
-    // const response = await addNewCourseService(courseFinalFormData);
-
-    // if (response?.success) {
-    //   setCourseLandingFormData(courseLandingInitialFormData);
-    //   setCourseCurriculamFormData(courseCurriculumInitialFormData);
-    //   navigate(-1);
-
-    //   console.log("course landing form data :", courseLandingFormData);
-    //   console.log("course curriculam form data :", courseCurriculamFormData);
-    // }
-
     // if current id is not a null then update the course by calling the api updateCourseByIdService otherwise create course :
     const response =
       currentEditedCourseId !== null
@@ -149,9 +138,17 @@ const AddNewCoursePage = () => {
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between">
-        <h1 className=" font-extrabold mb-5 text-xl md:text-3xl">
-          Create a new course
-        </h1>
+        <div className="flex items-center justify-center gap-4">
+          <button
+            onClick={() => navigate("/instructor")}
+            className="p-2 mb-2 rounded-md bg-white border cursor-pointer"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          <h1 className=" font-extrabold mb-3 text-xl md:text-3xl">
+            Create a new course
+          </h1>
+        </div>
 
         {/* The disabled prop expects true to disable the button.
             The disabled prop expects false to enable the button. */}
