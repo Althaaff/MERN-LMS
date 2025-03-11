@@ -13,9 +13,11 @@ import {
   courseLandingInitialFormData,
 } from "@/config";
 import { InstructorContext } from "@/context/instructor-context";
+import { deleteCourseByIdService } from "@/services";
 import { Delete, Edit } from "lucide-react";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const InstructorCourses = ({ listOfCourses }) => {
   const {
@@ -24,6 +26,28 @@ const InstructorCourses = ({ listOfCourses }) => {
     setCourseCurriculamFormData,
   } = useContext(InstructorContext);
   const navigate = useNavigate();
+
+  const [courses, setCourses] = useState(listOfCourses);
+
+  const handleDeleteCourse = async (courseId) => {
+    try {
+      const response = await deleteCourseByIdService(courseId);
+      console.log("response", response);
+
+      if (response?.success) {
+        toast.success("course deleted successfully.");
+
+        // update the state in the Ui:
+        setCourses((prevCourse) =>
+          prevCourse?.filter((course) => course?._id !== courseId)
+        );
+      } else {
+        toast.error("somthing went wrong.");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <Card>
@@ -55,8 +79,8 @@ const InstructorCourses = ({ listOfCourses }) => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {listOfCourses.length > 0
-                ? listOfCourses.map((course) => {
+              {courses?.length > 0
+                ? courses?.map((course) => {
                     return (
                       <>
                         <TableRow>
@@ -74,11 +98,17 @@ const InstructorCourses = ({ listOfCourses }) => {
                               }}
                               variant="ghost"
                               size="sm"
+                              className="cursor-pointer"
                             >
                               <Edit className="w-6 h-6" />
                             </Button>
 
-                            <Button variant="ghost" size="sm">
+                            <Button
+                              onClick={() => handleDeleteCourse(course?._id)}
+                              variant="ghost"
+                              size="sm"
+                              className="cursor-pointer"
+                            >
                               <Delete className="w-6 h-6" />
                             </Button>
                           </TableCell>
