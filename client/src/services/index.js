@@ -84,9 +84,6 @@ async function fetchInstructorCourseDetailsService(id) {
   const { data } = await axiosInstance.get(
     `/instructor/course/get/details/${id}`
   );
-
-  console.log("update api called :", data);
-
   return data;
 }
 
@@ -95,6 +92,15 @@ async function updateCourseByIdService(id, formData) {
   const { data } = await axiosInstance.put(
     `/instructor/course/update/${id}`,
     formData
+  );
+
+  return data;
+}
+
+// instructor view delete course API service :
+async function deleteCourseByIdService(id) {
+  const { data } = await axiosInstance.delete(
+    `/instructor/course/delete/${id}`
   );
 
   return data;
@@ -215,6 +221,7 @@ export {
   mediaBulkUpload,
   addNewCourseService,
   updateCourseByIdService,
+  deleteCourseByIdService,
   fetchInstructorCourseListService,
   fetchInstructorCourseDetailsService,
   fetchStudentViewCourseListService,
