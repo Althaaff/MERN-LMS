@@ -28,8 +28,7 @@ export const createNewCourse = async (req, res) => {
 export const getAllCourses = async (req, res) => {
   try {
     const coursesList = await Course.find({});
-
-    console.log("course lists :", coursesList);
+    // console.log("course lists :", coursesList);
 
     return res.status(200).json({
       success: true,
@@ -86,7 +85,7 @@ export const updateCourseById = async (req, res) => {
     );
 
     if (!updatedCourse) {
-      return res.status(200).json({
+      return res.status(404).json({
         success: false,
         message: "Course not found!",
       });
@@ -96,6 +95,36 @@ export const updateCourseById = async (req, res) => {
       success: true,
       message: "course updated successfullly!",
       data: updatedCourse,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: "some error occured!",
+    });
+  }
+};
+
+// update course by Id :
+export const deleteCourseById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log("deleted course id", id);
+
+    const deletedCourse = await Course.findByIdAndDelete(id);
+
+    if (!deletedCourse) {
+      return res.status(400).json({
+        success: false,
+        message: "Course not found!",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "course deleted successfullly!",
+      data: {},
     });
   } catch (error) {
     console.log(error);
