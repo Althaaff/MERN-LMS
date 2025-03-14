@@ -28,7 +28,7 @@ Student Features
 
 🛠️ Tech Stack
 
-Frontend: React.js, Material-UI, Bootstrap
+Frontend: React.js, Shadcn, tailwind
 
 Backend: Node.js, Express.js, MongoDB, Mongoose
 
