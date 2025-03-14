@@ -115,6 +115,17 @@ async function fetchStudentViewCourseListService(query) {
   return data;
 }
 
+// search specific course by search query :
+async function searchStudentViewCourseService(query) {
+  const { data } = await axiosInstance.get(
+    `/student/course/search?title=${query}`
+  );
+
+  console.log("search api service working!");
+
+  return data;
+}
+
 // fetching student course details service by ID :
 async function fetchStudentCourseDetailsService(courseId, studentId) {
   const { data } = await axiosInstance.get(
@@ -223,6 +234,7 @@ export {
   updateCourseByIdService,
   deleteCourseByIdService,
   fetchInstructorCourseListService,
+  searchStudentViewCourseService,
   fetchInstructorCourseDetailsService,
   fetchStudentViewCourseListService,
   fetchStudentCourseDetailsService,
