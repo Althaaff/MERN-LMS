@@ -1,18 +1,46 @@
+// import SearchBar from "@/components/SearchBar";
+import SearchBar from "@/components/search-bar";
 import { Button } from "@/components/ui/button";
 import { AuthContext } from "@/context/auth-context";
 import { DarkModeContext } from "@/context/darkmode-context";
+import { searchStudentViewCourseService } from "@/services";
 import { GraduationCap, Moon, Sun, TvMinimalPlay } from "lucide-react";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const StudentViewCommonHeader = () => {
   const { resetCredential } = useContext(AuthContext);
   const navigate = useNavigate();
   const { darkMode, toggleDarkMode } = useContext(DarkModeContext);
+  const [filterCourseByTitle, setFilterCourseByTitle] = useState([]);
+
+  console.log("courses", filterCourseByTitle);
 
   const toggleMode = () => {
     toggleDarkMode();
   };
+
+  const fetchCourses = async (query = "") => {
+    try {
+      const response = await searchStudentViewCourseService(query);
+
+      if (response?.success && response?.filteredCourses?.length > 0) {
+        setFilterCourseByTitle(response.filteredCourses);
+        navigate("/courses", {
+          state: { searchedCourses: response.filteredCourses },
+        });
+      } else {
+        toast.info(response.message || "Sorry ! Course not available");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCourses();
+  }, []);
 
   function handleLogout() {
     resetCredential();
@@ -34,6 +62,8 @@ const StudentViewCommonHeader = () => {
               SkillUp Academy
             </span>
           </Link>
+
+          <SearchBar onSearch={fetchCourses} />
 
           <div className="flex items-center space-x-1">
             <Button

@@ -11,6 +11,7 @@ export default function StudentProvider({ children }) {
   const [studentBoughtCoursesList, setStudentBoughtCoursesList] = useState([]);
   const [studentCurrentCourseProgress, setStudentCurrentCourseProgress] =
     useState({});
+  const [filterCourseByTitle, setFilterCourseByTitle] = useState([]);
 
   return (
     <StudentContext.Provider
@@ -32,6 +33,9 @@ export default function StudentProvider({ children }) {
 
         studentCurrentCourseProgress,
         setStudentCurrentCourseProgress,
+
+        filterCourseByTitle,
+        setFilterCourseByTitle,
       }}
     >
       {children}
