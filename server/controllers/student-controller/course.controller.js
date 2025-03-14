@@ -75,14 +75,9 @@ export const getStudentViewCourseDetails = async (req, res) => {
         data: null,
       });
     }
-
-    // Get total enrolled students count
-    const enrolledStudentsCount = courseDetails.students.length;
-
     return res.status(200).json({
       success: true,
       data: courseDetails,
-      totalStudents: enrolledStudentsCount, // Include total students //
     });
   } catch (error) {
     res.status(500).json({
@@ -114,5 +109,43 @@ export const checkCoursePurchaseInfo = async (req, res) => {
     return res
       .status(500)
       .json({ success: false, message: "some error occured!" });
+  }
+};
+
+export const searchCourses = async (req, res) => {
+  try {
+    const { title } = req.query; // Extract query from request
+    console.log("query:", title);
+
+    if (!title || title.trim() === "") {
+      return res.status(400).json({
+        success: false,
+        message: "Search query is required!",
+      });
+    }
+
+    // Use MongoDB's regex for case-insensitive search
+    const courses = await Course.find({
+      title: { $regex: title, $options: "i" },
+    });
+
+    // Correct way to check if no courses are found
+    if (!courses) {
+      return res.status(404).json({
+        success: false,
+        message: "finding course not found!",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      filteredCourses: courses,
+    });
+  } catch (error) {
+    console.error("Error in searchCourses:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Some error occurred!",
+    });
   }
 };
