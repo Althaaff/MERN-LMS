@@ -11,6 +11,7 @@ import studentViewCourseRoutes from "./routes/student-routes/student.routes.js";
 import studentViewOrderRoutes from "./routes/student-routes/order.routes.js";
 import studentCoursesRoutes from "./routes/student-routes/student-courses.routes.js";
 import studentCoursesProgressRoutes from "./routes/student-routes/course-progress.routes.js";
+import studentCourseCommentRoutes from "./routes/student-routes/comment.routes.js";
 
 const app = express();
 const PORT = process.env.PORT || 6000;
@@ -47,6 +48,9 @@ app.use("/student/course", studentViewCourseRoutes);
 
 // order :
 app.use("/student/order", studentViewOrderRoutes);
+
+// review of course :
+app.use("/student/course-review", studentCourseCommentRoutes);
 
 // student bought courses  :
 app.use("/student/courses-bought", studentCoursesRoutes);
