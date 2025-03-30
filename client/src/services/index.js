@@ -223,6 +223,29 @@ async function resetCurrentCourseProgressService(userId, courseId) {
   return data;
 }
 
+// comments of the course services :
+async function createCommentService(content, courseId, userId) {
+  // console.log(content);
+  const { data } = await axiosInstance.post(
+    "/student/course-review/create-comment",
+    {
+      content,
+      courseId,
+      userId,
+    }
+  );
+
+  return data;
+}
+
+async function getAllCommentsService(courseId) {
+  const { data } = await axiosInstance.get(
+    `/student/course-review/getAllcomments/${courseId}`
+  );
+
+  return data;
+}
+
 export {
   registerService,
   loginService,
@@ -244,4 +267,6 @@ export {
   markCurrentLectureAsViewedService,
   resetCurrentCourseProgressService,
   getAllCourseProgressPercentage,
+  createCommentService,
+  getAllCommentsService,
 };
