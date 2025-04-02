@@ -5,6 +5,7 @@ import { FaCommentAlt } from "react-icons/fa";
 import {
   checkCoursePurchaseService,
   createCommentService,
+  editCommentService,
   getAllCommentsService,
   getCurrentCourseProgressService,
   markCurrentLectureAsViewedService,
@@ -48,17 +49,16 @@ const StudentViewCourseProgressPage = () => {
   const [isSideBarOpen, setIsSideBarOpen] = useState(true);
   const [showConfetti, setShowConfetti] = useState(false);
   const [status, setStatus] = useState(null);
-  // const { studentViewCourseDetails } = useContext(StudentContext);
   const [activeTab, setActiveTab] = useState("description");
   const [showModal, setShowModal] = useState(false);
-
-  // console.log("student view course", studentViewCourseDetails);
-  // console.log("coursedetails", studentViewCourseDetails);
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editContent, setEditContent] = useState("");
 
-  console.log("comments", comments);
-
+  // console.log("editingCommentId:", editingCommentId);
+  // console.log("editContent:", editContent);
+  // console.log("comments", comments);
   // console.log("comment", comment);
 
   useEffect(() => {
@@ -173,9 +173,15 @@ const StudentViewCourseProgressPage = () => {
     }
   }
 
-  // // comment of the course :
+  // comment of the course :
   async function handleSubmit(e) {
     e.preventDefault();
+
+    if (editingCommentId) {
+      // If we're in edit mode, call save instead
+      handleSaveEdit(e);
+      return;
+    }
     try {
       const response = await createCommentService(comment, id, auth?.user?._id);
 
@@ -198,7 +204,37 @@ const StudentViewCourseProgressPage = () => {
     }
 
     fetchCourseComments();
-  }, [id]);
+  }, [activeTab === "comments"]);
+
+  const handleEdit = (comment) => {
+    setEditingCommentId(comment?._id);
+    setEditContent(comment?.content);
+    setComment(comment?.content);
+  };
+
+  const handleSaveEdit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await editCommentService(editContent, editingCommentId);
+
+      if (response?.success) {
+        // Update the comments array with the edited comment :
+        setComments(
+          comments?.map((comment) =>
+            comment?._id === editingCommentId
+              ? { ...comment, content: editContent }
+              : comment
+          )
+        );
+      }
+      setEditingCommentId(null);
+      setComment("");
+      toast.success("Your Review Updated..");
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
     fetchCurrentCourseProgress();
@@ -316,11 +352,7 @@ const StudentViewCourseProgressPage = () => {
                   {currentLecture?.title}
                 </h2>
               </div>
-              {/* <div className="p-4 bg-black rounded-md border mt-2">
-                <li className="text-red-400 ">
-                  {studentViewCourseDetails?.objectives}
-                </li>
-              </div> */}
+
               {/* <CommentAndDescriptionTabs /> */}
               <div className="w-full mx-auto p-4 text-black rounded-lg shadow-md">
                 <div className="flex space-x-15 mb-4">
@@ -368,64 +400,6 @@ const StudentViewCourseProgressPage = () => {
                         transition={{ duration: 0.3 }}
                         className="absolute w-full"
                       >
-                        {/* {showModal && (
-                          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-md z-50">
-                            <div className=" p-6 rounded-lg shadow-lg w-96 relative">
-                              <button
-                                className="absolute top-2 right-3 text-gray-600 hover:text-gray-800"
-                                onClick={() => setShowModal(false)}
-                              >
-                                ✖
-                              </button>
-
-                              <div className="flex flex-col items-start">
-                                <div className="flex items-center gap-2 bg-blue-500 p-4 w-full ">
-                                  <span className="text-md font-normal">
-                                    <FaCommentAlt color="black" />
-                                  </span>
-                                  <h2 className="text-white font-normal">
-                                    Add Review...
-                                  </h2>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                  <form onSubmit={handleSubmit}>
-                                    <input
-                                      type="text"
-                                      className="border-none outline-none p-4 mt-4 w-full mx-auto"
-                                      placeholder="Write a review..."
-                                      value={comment}
-                                      onChange={(e) =>
-                                        setComment(e.target.value)
-                                      }
-                                    />
-                                    <button className="py-2 px-3 rounded-md bg-blue-500 hover:bg-blue-400 transition-all text-white font-bold cursor-pointer">
-                                      {" "}
-                                      Send{" "}
-                                    </button>
-                                  </form>
-                                </div>
-                                <div className="flex flex-col gap-3 items-center rounded-md bg-gray-900 p-3 w-full h-104 overflow-y-auto scrollbar-hide">
-                                  {comments?.map((comment) => {
-                                    console.log("mapped comments", comment);
-                                    return (
-                                      <>
-                                        <div
-                                          key={comment?.courseId}
-                                          className="p-7 rounded-md bg-gray-700 w-full"
-                                        >
-                                          <span className="text-white font-normal">
-                                            {comment?.content}
-                                          </span>
-                                        </div>
-                                      </>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        )} */}
-
                         {showModal && (
                           <div
                             key={showModal}
@@ -445,7 +419,9 @@ const StudentViewCourseProgressPage = () => {
                               <div className="flex items-center gap-3 border-b pb-3">
                                 <FaCommentAlt className="text-blue-500 text-xl" />
                                 <h2 className="text-lg font-semibold text-white">
-                                  Add Review
+                                  {editingCommentId
+                                    ? "Edit Review"
+                                    : "Add Review"}
                                 </h2>
                               </div>
 
@@ -456,13 +432,17 @@ const StudentViewCourseProgressPage = () => {
                                   className="w-full border rounded-md p-3 focus:ring-2 focus:ring-blue-400 text-white"
                                   placeholder="Write a review..."
                                   value={comment}
-                                  onChange={(e) => setComment(e.target.value)}
+                                  onChange={(e) => {
+                                    setComment(e.target.value);
+                                    if (editingCommentId)
+                                      setEditContent(e.target.value);
+                                  }}
                                 />
                                 <button
                                   type="submit"
                                   className="w-full mt-3 py-2 bg-blue-500 text-white  cursor-pointer rounded-lg font-semibold hover:bg-blue-600 transition-all"
                                 >
-                                  Send
+                                  {editingCommentId ? "Save" : "Send"}
                                 </button>
                               </form>
 
@@ -475,7 +455,7 @@ const StudentViewCourseProgressPage = () => {
                                 ) : (
                                   comments.map((comment) => (
                                     <div
-                                      key={comment.courseId}
+                                      key={comment._id}
                                       className="p-3 rounded-md mt-2"
                                     >
                                       <div className="flex items-center gap-3">
@@ -483,13 +463,14 @@ const StudentViewCourseProgressPage = () => {
                                           {comment.content}
                                         </span>
                                         <button
-                                          className=" px-1 shadow-lg bg-white text-red-400 font-bold
+                                          className=" px-1 shadow-lg bg-blue-400 text-white font-bold
                                          rounded-md cursor-pointer"
+                                          onClick={() => handleEdit(comment)}
                                         >
                                           Edit
                                         </button>
 
-                                        <button className=" px-1 shadow-lg bg-white text-blue-400 font-bold rounded-md cursor-pointer">
+                                        <button className=" px-1 shadow-lg bg-red-400 text-white font-bold rounded-md cursor-pointer">
                                           Delete
                                         </button>
                                       </div>
@@ -549,7 +530,7 @@ const StudentViewCourseProgressPage = () => {
                             !studentCurrentCourseProgress?.progress[index - 1]
                               ?.viewed;
 
-                          console.log("isLocked :", isLocked);
+                          // console.log("isLocked :", isLocked);
 
                           return (
                             <div
