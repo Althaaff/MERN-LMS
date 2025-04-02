@@ -1,4 +1,5 @@
 import { Course } from "../../models/course.model.js";
+import { Comment } from "../../models/comment.model.js";
 
 //  create new course  :
 export const createNewCourse = async (req, res) => {
@@ -133,5 +134,24 @@ export const deleteCourseById = async (req, res) => {
       success: false,
       message: "some error occured!",
     });
+  }
+};
+
+export const getAllComments = async (req, res, next) => {
+  try {
+    const comments = await Comment.find();
+    console.log("all comments", comments);
+
+    if (comments.length === 0) {
+      return next(errorHandler(404, "comments not found!"));
+    }
+
+    res.status(201).json({
+      success: true,
+      message: "all comments are fetched successfully..",
+      comments,
+    });
+  } catch (error) {
+    next(error);
   }
 };
