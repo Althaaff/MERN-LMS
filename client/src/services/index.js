@@ -238,6 +238,18 @@ async function createCommentService(content, courseId, userId) {
   return data;
 }
 
+async function editCommentService(content, commentId) {
+  // console.log(content);
+  const { data } = await axiosInstance.put(
+    `/student/course-review/editComment/${commentId}`,
+    {
+      content,
+    }
+  );
+
+  return data;
+}
+
 async function getAllCommentsService(courseId) {
   const { data } = await axiosInstance.get(
     `/student/course-review/getAllcomments/${courseId}`
@@ -269,4 +281,5 @@ export {
   getAllCourseProgressPercentage,
   createCommentService,
   getAllCommentsService,
+  editCommentService,
 };
