@@ -11,7 +11,7 @@ const router = express.Router();
 
 router.post("/create-comment", authenticateMiddleware, createComment);
 router.get("/getAllcomments/:courseId", getCourseComments);
-router.put("/editComment", editComment);
-router.delete("/deleteComment", deleteComment);
+router.put("/editComment/:commentId", editComment);
+router.delete("/deleteComment/:commentId", deleteComment);
 
 export default router;

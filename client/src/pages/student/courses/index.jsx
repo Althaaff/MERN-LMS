@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { filterOptions, sortOptions } from "@/config";
 import { AuthContext } from "@/context/auth-context";
+import { DarkModeContext } from "@/context/darkmode-context";
 import { StudentContext } from "@/context/student-context";
 import {
   fetchStudentViewCourseListService,
@@ -21,6 +22,7 @@ import { Label } from "@radix-ui/react-dropdown-menu";
 import { ArrowUpDownIcon } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const StudentViewCoursesPage = () => {
   const [sort, setSort] = useState("price-lowtohigh");
@@ -30,6 +32,7 @@ const StudentViewCoursesPage = () => {
   const [progressPercentage, setProgressPercentage] = useState([]);
   const navigate = useNavigate();
   const [purchased, setPurchased] = useState(false);
+  const [localSearchedCourses, setLocalSearchedCourses] = useState([]);
 
   const {
     studentViewCoursesList,
@@ -39,6 +42,7 @@ const StudentViewCoursesPage = () => {
   } = useContext(StudentContext);
 
   const { auth } = useContext(AuthContext);
+  const { darkMode } = useContext(DarkModeContext);
 
   const createSearchParamsHelper = (filterParams) => {
     const queryParams = [];
@@ -124,6 +128,16 @@ const StudentViewCoursesPage = () => {
     sessionStorage.setItem("filters", JSON.stringify(copyFilters));
   };
 
+  // access the searched courses from navigation state :
+  useEffect(() => {
+    const { searchedCourses = [] } = location.state || {};
+    console.log("location", searchedCourses);
+
+    if (searchedCourses.length > 0) {
+      setLocalSearchedCourses(searchedCourses);
+    }
+  }, [location.state]);
+
   async function fetchAllStudentViewCourses(filters, sort) {
     const query = new URLSearchParams({
       ...filters,
@@ -135,7 +149,22 @@ const StudentViewCoursesPage = () => {
       const response = await fetchStudentViewCourseListService(query);
       // console.log("respons: ", response);
       if (response?.success) {
-        setStudentViewCoursesList(response?.data);
+        let courses = response?.data;
+        // console.log("before courses ", courses);
+
+        if (localSearchedCourses && localSearchedCourses.length > 0) {
+          const searchedCourseTitle = localSearchedCourses.map((course) => {
+            return course.title.toLowerCase();
+          });
+
+          console.log("searchedCourseTitle", searchedCourseTitle);
+
+          courses = courses.filter((course) => {
+            return searchedCourseTitle.includes(course.title.toLowerCase());
+          });
+        }
+
+        setStudentViewCoursesList(courses);
         setLoadingState(false);
       }
     } catch (error) {
@@ -196,15 +225,8 @@ const StudentViewCoursesPage = () => {
     setSort("price-lowtohigh");
   }, [location.state]);
 
-  // Remove the persisted filters from session storage when page unmounts :
-  useEffect(() => {
-    return () => {
-      sessionStorage.removeItem("filters");
-    };
-  }, []);
-
   return (
-    <div className="mx-auto p-4">
+    <div className="mx-auto p-4 mt-20">
       <h1 className="text-2xl font-bold mb-4">All Courses</h1>
       <div className="flex flex-col md:flex-row gap-4">
         <aside className="w-full md:w-64 space-y-4">
@@ -264,8 +286,10 @@ const StudentViewCoursesPage = () => {
                     size="sm"
                     className="flex items-center gap-2 p-5 cursor-pointer"
                   >
-                    <ArrowUpDownIcon className="h-4 w-4" />
-                    <span className="text-[16px] font-medium">Sort By</span>
+                    <ArrowUpDownIcon className="h-4 w-4 text-black" />
+                    <span className="text-[16px] text-black font-medium">
+                      Sort By
+                    </span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-[180px]">
@@ -297,7 +321,9 @@ const StudentViewCoursesPage = () => {
                   <>
                     <Card
                       key={courseItem?._id}
-                      className="cursor-pointer w-full"
+                      className={`cursor-pointer w-full ${
+                        darkMode ? "bg-black text-white" : "bg-white"
+                      }`}
                       onClick={() => handleNavigate(courseItem?._id)}
                     >
                       <CardContent className="flex gap-4 p-4">
@@ -347,6 +373,8 @@ const StudentViewCoursesPage = () => {
 
                                 const percentage =
                                   currentProgress.progressPercentage ?? 0;
+
+                                console.log("percentage", percentage);
 
                                 return (
                                   <>

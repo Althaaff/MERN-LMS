@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 // import { AuthContext } from "@/context/auth-context";
 import { useContext, useEffect, useState } from "react";
-import banner from "../../../../public/image.png";
 import { courseCategories } from "@/config";
 import { StudentContext } from "@/context/student-context";
 import {
@@ -12,14 +11,15 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "@/context/auth-context";
 import Spinner from "@/components/spinner/Spinner";
 import ImageSlider from "@/components/Slider";
+import { DarkModeContext } from "@/context/darkmode-context";
 
 const StudentHomePage = () => {
   // const { resetCredential } = useContext(AuthContext);
 
   const { studentViewCoursesList, setStudentViewCoursesList } =
     useContext(StudentContext);
-
   const { auth } = useContext(AuthContext);
+  const { darkMode } = useContext(DarkModeContext);
 
   const navigate = useNavigate();
 
@@ -90,12 +90,16 @@ const StudentHomePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div
+      className={`min-h-screen ${
+        darkMode
+          ? "bg-black text-white min-h-screen"
+          : "bg-white text-black min-h-screen"
+      }`}
+    >
       <ImageSlider />
-      <section className="py-8 px-4 lg:px-8 bg-gray-100">
-        <h1 className="text-2xl font-normal text-black mb-6">
-          Course Categories
-        </h1>
+      <section className="py-8 px-4 lg:px-8">
+        <h1 className="text-2xl font-normal mb-6">Course Categories</h1>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {courseCategories.map((categoryItem) => (
             <Button
@@ -109,9 +113,9 @@ const StudentHomePage = () => {
         </div>{" "}
       </section>
 
-      <section className="py-12 px-4 lg:px-8 bg-gray-100">
-        <h1 className="text-2xl text-black font-normal mb-8 text-left">
-          Featured Courses
+      <section className="py-12 px-4 lg:px-8">
+        <h1 className="text-2xl md:pl-20 pl-12 font-normal mb-8 text-left">
+          <span className="p-4 border">Featured Courses</span>
         </h1>
 
         <div className="flex flex-col gap-6 md:flex-row items-center justify-center flex-wrap">
@@ -130,7 +134,7 @@ const StudentHomePage = () => {
                   />
                 </div>
 
-                <hr className="mt-2" />
+                <hr className="mt-2 text-white" />
 
                 <div className="p-4 text-left">
                   <h1 className="font-bold mb-2 text-md">{courseItem.title}</h1>

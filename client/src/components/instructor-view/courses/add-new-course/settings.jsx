@@ -93,7 +93,7 @@ const CourseSettings = () => {
             />
             <Button
               onClick={() => handleReplaceThumbnail()}
-              className="p-4 bg-black w-auto text-white cursor-pointer max-w-[270px]"
+              className="p-4 bg-black w-auto text-white cursor-pointer mt-3 max-w-[270px]"
             >
               Update Thumbnail
             </Button>

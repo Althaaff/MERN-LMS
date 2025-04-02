@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import VideoPlayer from "@/components/video-player";
 import { AuthContext } from "@/context/auth-context";
+import { DarkModeContext } from "@/context/darkmode-context";
 import { StudentContext } from "@/context/student-context";
 import {
   checkCoursePurchaseService,
@@ -20,7 +21,6 @@ import { DialogClose } from "@radix-ui/react-dialog";
 import { CheckCircle, GlobeIcon, Lock, PlayCircle } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { toast } from "react-toastify";
 
 const StudentViewCourseDetailsPage = () => {
   const {
@@ -33,6 +33,8 @@ const StudentViewCourseDetailsPage = () => {
   } = useContext(StudentContext);
 
   const { auth } = useContext(AuthContext);
+
+  const { darkMode } = useContext(DarkModeContext);
 
   const { id } = useParams();
 
@@ -175,7 +177,7 @@ const StudentViewCourseDetailsPage = () => {
   };
   return (
     <div className="mx-auto p-4">
-      <div className="bg-gray-900 text-white p-8 rounded-t-lg">
+      <div className="bg-gray-900 text-white p-8 mt-20 rounded-t-lg">
         <h1 className="text-3xl font-bold mb-4">
           {studentViewCourseDetails?.title}
         </h1>
@@ -203,7 +205,7 @@ const StudentViewCourseDetailsPage = () => {
 
       <div className="flex flex-col md:flex-row gap-8 mt-8">
         <main className="flex-grow">
-          <Card className="mb-8">
+          <Card className={`mb-8 ${darkMode ? "bg-black text-white" : ""}`}>
             <CardHeader>
               <CardTitle className="font-extrabold">
                 What you'll learn 💡
@@ -225,14 +227,14 @@ const StudentViewCourseDetailsPage = () => {
             </CardContent>
           </Card>
 
-          <Card className="mb-8">
+          <Card className={`mb-8 ${darkMode ? "bg-black text-white" : ""}`}>
             <CardHeader>
               <CardTitle>Course Description</CardTitle>
             </CardHeader>
             <CardContent>{studentViewCourseDetails?.description}</CardContent>
           </Card>
 
-          <Card className="mb-8">
+          <Card className={`mb-8 ${darkMode ? "bg-black text-white" : ""}`}>
             <CardHeader>
               <CardTitle>Course Curriculum</CardTitle>
             </CardHeader>
@@ -293,9 +295,18 @@ const StudentViewCourseDetailsPage = () => {
                 />
               </div>
               <div className="mb-4">
-                <span className="text-2xl font-normal bg-green-200">
-                  $ {studentViewCourseDetails?.pricing}
-                </span>
+                <div className="flex justify-between items-center">
+                  <span
+                    className={`text-2xl font-normal ${
+                      darkMode ? "bg-none" : "bg-green-200"
+                    }`}
+                  >
+                    $ {studentViewCourseDetails?.pricing}
+                  </span>
+                  <span className="text-gray-100 text-sm font-normal">
+                    Enrolled {studentViewCourseDetails?.students.length}
+                  </span>
+                </div>
 
                 <Button
                   onClick={() => {

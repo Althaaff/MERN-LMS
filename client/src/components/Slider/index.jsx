@@ -1,6 +1,6 @@
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useSwipeable } from "react-swipeable";
 
 const ImageSlider = () => {
@@ -17,6 +17,7 @@ const ImageSlider = () => {
 
   // Function to start or reset the auto-slide interval
   const startAutoSlide = () => {
+    // // run if intervalRed is not null :
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
     }
@@ -36,6 +37,8 @@ const ImageSlider = () => {
   // Set up auto-slide on mount and reset on update
   useEffect(() => {
     startAutoSlide();
+
+    // when component mounts clear the interval auto sliding timings //
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
@@ -94,7 +97,7 @@ const ImageSlider = () => {
             <img
               src={images[currentIndex]}
               alt={`Slide ${currentIndex + 1}`}
-              className="w-full h-full object-cover rounded-md"
+              className="w-full h-full object-cover mt-20 rounded-md"
             />
             {/* Overlay Text and Button */}
             <div className="absolute top-[20%] left-[10%] bg-white p-5 rounded-[10px] max-w-[300px]">

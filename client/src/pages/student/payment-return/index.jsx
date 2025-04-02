@@ -16,6 +16,8 @@ const PayPalPaymentReturnPage = () => {
       async function capturePayment() {
         const orderId = JSON.parse(sessionStorage.getItem("currentOrderId"));
 
+        console.log("order Id :", orderId);
+
         const response = await captureAndFinalizePaymentService(
           paymentId,
           payerId,

@@ -35,7 +35,7 @@ export const editComment = async (req, res, next) => {
   try {
     const comment = await Comment.findById(req.params.commentId);
 
-    if (!comment) {
+    if (comment.length === 0) {
       return next(errorHandler(404, "Comment not found!"));
     }
 
@@ -49,7 +49,11 @@ export const editComment = async (req, res, next) => {
       }
     );
 
-    res.status(200).json(editedComment);
+    res.status(200).json({
+      success: true,
+      mesage: "review updated successfully..",
+      comment: editedComment,
+    });
   } catch (error) {
     next(error);
   }
@@ -59,18 +63,21 @@ export const deleteComment = async (req, res, next) => {
   try {
     const comment = await Comment.findById(req.params.commentId);
 
-    if (!comment) {
+    if (comment.length === 0) {
       return next(errorHandler(404, "Comment not found!"));
     }
 
-    if (comment.userId !== req.user.id && !req.user.isAdmin) {
+    if (comment.userId !== req.user?._id && !req.role === "instructor") {
       return next(
         errorHandler(403, "You are not allowed delete this comment!")
       );
     }
 
     await Comment.findByIdAndDelete(req.params.commentId);
-    res.status(200).json("comment has been deleted!");
+    res.status(200).json({
+      success: true,
+      message: "comment has been deleted successfully..",
+    });
   } catch (error) {
     next(error);
   }
@@ -81,8 +88,8 @@ export const getCourseComments = async (req, res, next) => {
     const comments = await Comment.find({ courseId: req.params.courseId });
     console.log("all comments", comments);
 
-    if (!comments) {
-      next(errorHandler(404, "comments not found!"));
+    if (comments.length === 0) {
+      return next(errorHandler(404, "comments not found!"));
     }
 
     res.status(201).json({

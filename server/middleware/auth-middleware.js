@@ -22,5 +22,7 @@ export const authenticateMiddleware = async (req, res, next) => {
 
   req.user = payload;
 
+  console.log("user: ", req.user);
+
   next();
 };

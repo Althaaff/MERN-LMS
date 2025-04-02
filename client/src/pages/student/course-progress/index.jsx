@@ -1,12 +1,13 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { AuthContext } from "@/context/auth-context";
 import { FaCommentAlt } from "react-icons/fa";
 import {
   checkCoursePurchaseService,
   createCommentService,
+  deleteCommentService,
   editCommentService,
-  getAllCommentsService,
+  getCourseComments,
   getCurrentCourseProgressService,
   markCurrentLectureAsViewedService,
   resetCurrentCourseProgressService,
@@ -176,6 +177,9 @@ const StudentViewCourseProgressPage = () => {
   // comment of the course :
   async function handleSubmit(e) {
     e.preventDefault();
+    if (comment === "") {
+      toast.warning("Comment cannot be empty!");
+    }
 
     if (editingCommentId) {
       // If we're in edit mode, call save instead
@@ -196,7 +200,7 @@ const StudentViewCourseProgressPage = () => {
 
   useEffect(() => {
     async function fetchCourseComments() {
-      const response = await getAllCommentsService(id);
+      const response = await getCourseComments(id);
 
       if (response.success) {
         setComments(response?.comments);
@@ -231,6 +235,27 @@ const StudentViewCourseProgressPage = () => {
       setEditingCommentId(null);
       setComment("");
       toast.success("Your Review Updated..");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleDelete = async (commentId) => {
+    console.log("comment id", commentId);
+    try {
+      const response = await deleteCommentService(commentId);
+      console.log(response);
+
+      if (response.success) {
+        toast.success("Review Deleted..");
+
+        // update the comments array :
+        setComments((prevComments) =>
+          prevComments.filter((comment) => comment._id !== commentId)
+        );
+        setComment("");
+        setEditContent("");
+      }
     } catch (error) {
       console.log(error);
     }
@@ -386,8 +411,11 @@ const StudentViewCourseProgressPage = () => {
                         transition={{ duration: 0.3 }}
                         className="absolute w-full"
                       >
-                        <p className="text-sm">
-                          This is the description content.
+                        <p className="text-sm text-white font-bold">
+                          {
+                            studentCurrentCourseProgress?.courseDetails
+                              ?.objectives
+                          }
                         </p>
                       </motion.div>
                     )}
@@ -409,7 +437,7 @@ const StudentViewCourseProgressPage = () => {
                             <div className="bg-gray-800 p-6 rounded-2xl shadow-xl w-[800px] relative">
                               {/* Close Button */}
                               <button
-                                className="absolute top-3 right-3 text-gray-600 hover:text-gray-900 text-xl cursor-pointer"
+                                className="absolute top-3 right-3 text-black text-xs cursor-pointer bg-white rounded-full p-2 "
                                 onClick={() => setShowModal(false)}
                               >
                                 ✖
@@ -427,17 +455,30 @@ const StudentViewCourseProgressPage = () => {
 
                               {/* Input Field */}
                               <form onSubmit={handleSubmit} className="mt-4">
-                                <input
-                                  type="text"
-                                  className="w-full border rounded-md p-3 focus:ring-2 focus:ring-blue-400 text-white"
+                                <textarea
+                                  className="w-full border rounded-md p-3 focus:ring-2 focus:ring-blue-400 text-white bg-gray-800 resize-none"
                                   placeholder="Write a review..."
-                                  value={comment}
+                                  maxLength={250}
+                                  value={
+                                    editingCommentId ? editContent : comment
+                                  }
                                   onChange={(e) => {
-                                    setComment(e.target.value);
-                                    if (editingCommentId)
-                                      setEditContent(e.target.value);
+                                    const value = e.target.value;
+
+                                    if (value.length >= 250) {
+                                      toast.info(
+                                        "You have reached the maximum comment length (250 characters)."
+                                      );
+                                    }
+
+                                    if (editingCommentId) {
+                                      setEditContent(value);
+                                    } else {
+                                      setComment(value);
+                                    }
                                   }}
                                 />
+
                                 <button
                                   type="submit"
                                   className="w-full mt-3 py-2 bg-blue-500 text-white  cursor-pointer rounded-lg font-semibold hover:bg-blue-600 transition-all"
@@ -453,29 +494,38 @@ const StudentViewCourseProgressPage = () => {
                                     No comments yet.
                                   </p>
                                 ) : (
-                                  comments.map((comment) => (
-                                    <div
-                                      key={comment._id}
-                                      className="p-3 rounded-md mt-2"
-                                    >
-                                      <div className="flex items-center gap-3">
-                                        <span className="text-white text-[19px]">
-                                          {comment.content}
-                                        </span>
-                                        <button
-                                          className=" px-1 shadow-lg bg-blue-400 text-white font-bold
+                                  comments.map((comment) => {
+                                    console.log("commentId", comment);
+                                    return (
+                                      <div
+                                        key={comment._id}
+                                        className="p-3 rounded-md mt-2 flex flex-col gap-3"
+                                      >
+                                        <div className="flex items-center gap-3">
+                                          <span className="text-white text-[19px]">
+                                            {comment.content}
+                                          </span>
+                                          <button
+                                            className=" px-1 shadow-lg bg-blue-400 text-white font-bold
                                          rounded-md cursor-pointer"
-                                          onClick={() => handleEdit(comment)}
-                                        >
-                                          Edit
-                                        </button>
+                                            onClick={() => handleEdit(comment)}
+                                          >
+                                            Edit
+                                          </button>
 
-                                        <button className=" px-1 shadow-lg bg-red-400 text-white font-bold rounded-md cursor-pointer">
-                                          Delete
-                                        </button>
+                                          <button
+                                            className=" px-1 shadow-lg bg-red-400 text-white font-bold rounded-md cursor-pointer"
+                                            onClick={() =>
+                                              handleDelete(comment?._id)
+                                            }
+                                          >
+                                            Delete
+                                          </button>
+                                        </div>
+                                        <hr className="border-t-[0.5px] border-gray-400 opacity-40 " />
                                       </div>
-                                    </div>
-                                  ))
+                                    );
+                                  })
                                 )}
                               </div>
                             </div>

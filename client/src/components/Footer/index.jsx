@@ -1,8 +1,11 @@
+import { DarkModeContext } from "@/context/darkmode-context";
 import { Github, Instagram, Linkedin, Twitter } from "lucide-react";
+import { useContext } from "react";
 
 const FooterComponent = () => {
+  const { darkMode } = useContext(DarkModeContext);
   return (
-    <div className="p-9 bg-[#eee9e9]">
+    <div className={`${darkMode ? "bg-black" : "bg-[#eee9e9]"}`}>
       <section className="w-full flex flex-col gap-4">
         <div className="flex flex-col p-2 md:flex-row items-center gap-5 mx-auto">
           <div className=" flex flex-col items-center gap-4 mb-20">

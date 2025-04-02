@@ -141,7 +141,7 @@ const AddNewCoursePage = () => {
         <div className="flex items-center justify-center gap-4">
           <button
             onClick={() => navigate("/instructor")}
-            className="p-2 mb-2 rounded-md bg-white border cursor-pointer"
+            className="p-2 mb-2 rounded-md bg-white text-black border cursor-pointer"
           >
             <ArrowLeft className="h-4 w-4" />
           </button>

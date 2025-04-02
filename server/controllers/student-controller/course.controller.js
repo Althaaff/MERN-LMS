@@ -149,3 +149,22 @@ export const searchCourses = async (req, res) => {
     });
   }
 };
+
+export const getPopularCourses = async (req, res, next) => {
+  try {
+    const popularCourses = await Course.find()
+      .sort({ students: -1 }) // Sort by number of students enrolled
+      .limit(10); // Get top 10 popular courses
+
+    res.status(200).json({
+      success: true,
+      message: "Popular courses fetched successfully",
+      courses: popularCourses.map((course) => ({
+        ...course.toObject(),
+        enrolledStudents: course.students.length, // Count enrolled students dynamically
+      })),
+    });
+  } catch (error) {
+    next(error);
+  }
+};

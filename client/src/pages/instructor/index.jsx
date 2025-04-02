@@ -1,4 +1,5 @@
 import InstructorCourses from "@/components/instructor-view/courses";
+import { GetAllComments } from "@/components/instructor-view/courses/comments";
 import InstructorDashBoard from "@/components/instructor-view/dashboard";
 import { Button } from "@/components/ui/button";
 import { AuthContext } from "@/context/auth-context";
@@ -7,6 +8,7 @@ import { fetchInstructorCourseListService } from "@/services";
 import { Tabs, TabsContent } from "@radix-ui/react-tabs";
 import { BarChart, Book, LogOut } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
+import { FaComments } from "react-icons/fa";
 
 const InstructorDashboardPage = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -41,7 +43,7 @@ const InstructorDashboardPage = () => {
       icon: BarChart,
       label: "Dashboard",
       value: "dashboard",
-      component: <InstructorDashBoard />,
+      component: <InstructorDashBoard listOfCourses={instructorCoursesList} />,
     },
 
     {
@@ -49,6 +51,13 @@ const InstructorDashboardPage = () => {
       label: "Courses",
       value: "courses",
       component: <InstructorCourses listOfCourses={instructorCoursesList} />,
+    },
+
+    {
+      icon: FaComments,
+      label: "Comments",
+      value: "comments",
+      component: <GetAllComments />,
     },
 
     {
@@ -61,8 +70,8 @@ const InstructorDashboardPage = () => {
 
   return (
     <>
-      <div className="flex h-full min-h-screen bg-gray-100">
-        <aside className="w-64 bg-white shadow-md hidden md:block">
+      <div className="flex h-full min-h-screen">
+        <aside className="w-64 shadow-md hidden md:block">
           <div className="p-4">
             <h2 className="font-bold text-2xl mb-4">Instructor View</h2>
 

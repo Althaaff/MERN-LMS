@@ -50,7 +50,7 @@ export const markCurrentLectureAsViewed = async (req, res) => {
     if (!course) {
       return res.status(404).json({
         success: false,
-        message: "Course not found",
+        message: "Course not found!",
       });
     }
 

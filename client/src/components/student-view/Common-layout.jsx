@@ -12,7 +12,9 @@ const StudentViewCommonLayout = () => {
       ) : null}
       <Outlet />
 
-      <FooterComponent />
+      {!location.pathname.includes("/course-progress") ? (
+        <FooterComponent />
+      ) : null}
     </div>
   );
 };

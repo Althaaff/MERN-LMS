@@ -250,10 +250,26 @@ async function editCommentService(content, commentId) {
   return data;
 }
 
-async function getAllCommentsService(courseId) {
+async function deleteCommentService(commentId) {
+  const { data } = await axiosInstance.delete(
+    `/student/course-review/deleteComment/${commentId}`
+  );
+
+  return data;
+}
+
+// student side :
+async function getCourseComments(courseId) {
   const { data } = await axiosInstance.get(
     `/student/course-review/getAllcomments/${courseId}`
   );
+
+  return data;
+}
+
+// instructor side :
+async function getAllCommentsService() {
+  const { data } = await axiosInstance.get("/instructor/course/getAllComments");
 
   return data;
 }
@@ -280,6 +296,8 @@ export {
   resetCurrentCourseProgressService,
   getAllCourseProgressPercentage,
   createCommentService,
-  getAllCommentsService,
+  getCourseComments,
   editCommentService,
+  deleteCommentService,
+  getAllCommentsService,
 };

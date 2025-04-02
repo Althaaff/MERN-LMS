@@ -10,7 +10,7 @@ export const getCoursesByStudentId = async (req, res) => {
       userId: studentId,
     });
 
-    console.log("studentBoughtCourses :", studentBoughtCourses);
+    // console.log("studentBoughtCourses :", studentBoughtCourses);
 
     if (studentBoughtCourses) {
       return res.status(200).json({
