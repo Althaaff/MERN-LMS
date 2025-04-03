@@ -13,6 +13,7 @@ import { AuthContext } from "@/context/auth-context";
 import Spinner from "@/components/spinner/Spinner";
 import ImageSlider from "@/components/Slider";
 import { DarkModeContext } from "@/context/darkmode-context";
+import RatingComponent from "@/pages/student/home/RatingComponent";
 
 const StudentHomePage = () => {
   const { studentViewCoursesList, setStudentViewCoursesList } =
@@ -29,6 +30,8 @@ const StudentHomePage = () => {
   const [loading, setLoading] = useState(false);
 
   const [popularCourses, setPopularCourses] = useState([]);
+
+  const [userRating, setUserRating] = useState(0);
 
   console.log("popular courses", popularCourses);
 
@@ -162,9 +165,17 @@ const StudentHomePage = () => {
 
                 <div className="p-4 text-left">
                   <h1 className="font-bold mb-2 text-md">{courseItem.title}</h1>
-                  <p className="text-sm text-gray-700 mb-2">
-                    {courseItem?.instructorName}
-                  </p>
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm text-gray-700 mb-2">
+                      {courseItem?.instructorName}
+                    </p>
+
+                    <RatingComponent
+                      rating={userRating}
+                      setRating={setUserRating}
+                      editable={true}
+                    />
+                  </div>
                   <p className="font-normal text-blue-500 text-[16px]">
                     ${courseItem?.pricing}
                   </p>
