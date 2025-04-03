@@ -6,6 +6,7 @@ import { StudentContext } from "@/context/student-context";
 import {
   checkCoursePurchaseService,
   fetchStudentViewCourseListService,
+  getPopularCoursesService,
 } from "@/services";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "@/context/auth-context";
@@ -14,11 +15,11 @@ import ImageSlider from "@/components/Slider";
 import { DarkModeContext } from "@/context/darkmode-context";
 
 const StudentHomePage = () => {
-  // const { resetCredential } = useContext(AuthContext);
-
   const { studentViewCoursesList, setStudentViewCoursesList } =
     useContext(StudentContext);
+
   const { auth } = useContext(AuthContext);
+
   const { darkMode } = useContext(DarkModeContext);
 
   const navigate = useNavigate();
@@ -26,6 +27,10 @@ const StudentHomePage = () => {
   const location = useLocation();
 
   const [loading, setLoading] = useState(false);
+
+  const [popularCourses, setPopularCourses] = useState([]);
+
+  console.log("popular courses", popularCourses);
 
   async function fetchAllStudentViewCourses() {
     setLoading(true);
@@ -43,6 +48,25 @@ const StudentHomePage = () => {
 
   useEffect(() => {
     fetchAllStudentViewCourses();
+  }, []);
+
+  async function fetchPopularCourses() {
+    try {
+      const response = await getPopularCoursesService();
+
+      if (response?.success) {
+        // console.log("response :", response);
+        setPopularCourses(response?.courses);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    setTimeout(() => {
+      fetchPopularCourses();
+    }, 2000);
   }, []);
 
   if (loading) {
@@ -152,6 +176,53 @@ const StudentHomePage = () => {
               Course Not Found!
             </h1>
           )}
+        </div>
+      </section>
+
+      <section className="py-12 px-4 lg:px-8">
+        <h1 className="text-2xl md:pl-20 pl-12 font-normal mb-8 text-left">
+          <span className="p-4 border">Popular Courses</span>
+        </h1>
+
+        <div className="flex flex-col gap-6 md:flex-row items-center justify-center flex-wrap">
+          {popularCourses && popularCourses.length > 0
+            ? popularCourses.map((popularCourse) => (
+                <div
+                  onClick={() => handleCourseNavigate(popularCourse?._id)}
+                  className="border w-[314px] h-[337.63px] flex flex-col rounded-md cursor-pointer hover:shadow-xl overflow-hidden transition-transform duration-300 ease-in hover:scale-105"
+                  key={popularCourse._id}
+                >
+                  <div className="flex items-center justify-center mt-2 w-full h-[200px]">
+                    <img
+                      src={popularCourse?.image}
+                      alt="course img"
+                      className="object-cover w-[290px] h-[200px] rounded-md"
+                    />
+                  </div>
+
+                  <hr className="mt-2 text-white" />
+
+                  <div className="p-4 text-left">
+                    <h1 className="font-bold mb-2 text-md">
+                      {popularCourse.title}
+                    </h1>
+                    <div className="flex justify-between items-center">
+                      <p className="text-sm text-gray-700 mb-2">
+                        {popularCourse?.instructorName}
+                      </p>
+                      <a>
+                        <a>
+                          <i className="fa-solid fa-award text-yellow-500 text-lg"></i>
+                        </a>
+                      </a>
+                    </div>
+                    <p className="font-normal text-blue-500 text-[16px]">
+                      ${popularCourse?.pricing}
+                    </p>
+                  </div>
+                </div>
+              ))
+            : null}
         </div>
       </section>
     </div>
