@@ -152,7 +152,9 @@ export const searchCourses = async (req, res) => {
 
 export const getPopularCourses = async (req, res, next) => {
   try {
-    const popularCourses = await Course.find()
+    const popularCourses = await Course.find({
+      $expr: { $gt: [{ $size: "$students" }, 0] }, // Fetch only courses with more than 3 students
+    })
       .sort({ students: -1 }) // Sort by number of students enrolled
       .limit(10); // Get top 10 popular courses
 
