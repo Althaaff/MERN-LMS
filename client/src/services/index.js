@@ -274,6 +274,14 @@ async function getAllCommentsService() {
   return data;
 }
 
+async function getPopularCoursesService() {
+  const { data } = await axiosInstance.get(
+    "/instructor/course/getPopularCourses"
+  );
+
+  return data;
+}
+
 export {
   registerService,
   loginService,
@@ -300,4 +308,5 @@ export {
   editCommentService,
   deleteCommentService,
   getAllCommentsService,
+  getPopularCoursesService,
 };
