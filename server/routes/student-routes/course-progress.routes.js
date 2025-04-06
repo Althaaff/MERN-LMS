@@ -6,6 +6,7 @@ import {
   getAllCourseProgressPercentage,
 } from "../../controllers/student-controller/course.progress.controller.js";
 import { authenticateMiddleware } from "../../middleware/auth-middleware.js";
+import { getQuizForCourse } from "../../controllers/student-controller/getQuiz.controller.js";
 
 const router = express.Router();
 
@@ -17,4 +18,6 @@ router.get(
   authenticateMiddleware,
   getAllCourseProgressPercentage
 );
+router.get("/:courseId/getQuiz", authenticateMiddleware, getQuizForCourse);
+
 export default router;
