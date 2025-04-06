@@ -76,6 +76,8 @@ async function addNewCourseService(formData) {
     formData
   );
 
+  console.log("data :", data);
+
   return data;
 }
 
@@ -282,6 +284,14 @@ async function getPopularCoursesService() {
   return data;
 }
 
+async function createCourseQuizService(courseId) {
+  const { data } = await axiosInstance.post(
+    `/instructor/course/generate/${courseId}`
+  );
+
+  return data;
+}
+
 export {
   registerService,
   loginService,
@@ -309,4 +319,5 @@ export {
   deleteCommentService,
   getAllCommentsService,
   getPopularCoursesService,
+  createCourseQuizService,
 };
