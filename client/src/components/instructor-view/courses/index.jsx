@@ -1,3 +1,4 @@
+import Spinner from "@/components/spinner/Spinner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -13,7 +14,7 @@ import {
   courseLandingInitialFormData,
 } from "@/config";
 import { InstructorContext } from "@/context/instructor-context";
-import { deleteCourseByIdService } from "@/services";
+import { createCourseQuizService, deleteCourseByIdService } from "@/services";
 import { Delete, Edit } from "lucide-react";
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -28,6 +29,12 @@ const InstructorCourses = ({ listOfCourses }) => {
   const navigate = useNavigate();
 
   const [courses, setCourses] = useState(listOfCourses);
+
+  console.log("courses :", courses);
+  const [createdQuiz, setCreatedQuiz] = useState([]);
+  const [creatingQuiz, setCreatingQuiz] = useState({});
+
+  console.log("created course :", createdQuiz);
 
   const handleDeleteCourse = async (courseId) => {
     try {
@@ -46,6 +53,36 @@ const InstructorCourses = ({ listOfCourses }) => {
       }
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  // handle create quizz :
+  const handleCreteQuiz = async (courseId) => {
+    console.log("course id", courseId);
+    try {
+      setCreatingQuiz((prev) => ({ ...prev, [courseId]: true }));
+
+      const response = await createCourseQuizService(courseId);
+
+      if (response?.success) {
+        console.log("response", response);
+        setCreatedQuiz(response?.quiz);
+
+        // update the specific course with new quiz data :
+        setCourses((prevCourse) =>
+          prevCourse.map((course) =>
+            course?._id === courseId
+              ? { ...course, quiz: response?.quiz }
+              : course
+          )
+        );
+
+        toast.success("Quiz created successfully..");
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setCreatingQuiz((prev) => ({ ...prev, [courseId]: false }));
     }
   };
 
@@ -75,6 +112,7 @@ const InstructorCourses = ({ listOfCourses }) => {
                 <TableHead>Courses</TableHead>
                 <TableHead>Students</TableHead>
                 <TableHead>Revenue</TableHead>
+                <TableHead>Quiz</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -89,6 +127,20 @@ const InstructorCourses = ({ listOfCourses }) => {
                           </TableCell>
                           <TableCell>{course?.students?.length}</TableCell>
                           <TableCell>${course?.pricing}</TableCell>
+                          <TableCell>
+                            <Button
+                              as="label"
+                              variant="outline"
+                              className="cursor-pointer  bg-blue-500 text-white duration-800 transition-all"
+                              onClick={() => handleCreteQuiz(course?._id)}
+                            >
+                              {creatingQuiz[course?._id] ? (
+                                <Spinner size={"20"} color={"white"} />
+                              ) : (
+                                "Create Quiz"
+                              )}
+                            </Button>
+                          </TableCell>
                           <TableCell className="text-right">
                             <Button
                               onClick={() => {
