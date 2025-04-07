@@ -7,6 +7,8 @@ import {
 } from "../../controllers/student-controller/course.progress.controller.js";
 import { authenticateMiddleware } from "../../middleware/auth-middleware.js";
 import { getQuizForCourse } from "../../controllers/student-controller/getQuiz.controller.js";
+import { submitQuizAttempt } from "../../controllers/student-controller/submitQuiz.controller.js";
+import { getQuizAttemptResults } from "../../controllers/student-controller/getQuizAttempt.controller.js";
 
 const router = express.Router();
 
@@ -19,5 +21,7 @@ router.get(
   getAllCourseProgressPercentage
 );
 router.get("/:courseId/getQuiz", authenticateMiddleware, getQuizForCourse);
+router.post("/attempt/:quizId", authenticateMiddleware, submitQuizAttempt);
+router.get("/getAttemptResults/:attemptId", getQuizAttemptResults);
 
 export default router;
