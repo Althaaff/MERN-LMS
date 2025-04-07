@@ -284,9 +284,41 @@ async function getPopularCoursesService() {
   return data;
 }
 
+// create course quiz service :
 async function createCourseQuizService(courseId) {
   const { data } = await axiosInstance.post(
     `/instructor/course/generate/${courseId}`
+  );
+
+  return data;
+}
+
+// get quiz for specific course service :
+async function getCourseQuizService(courseId) {
+  const { data } = await axiosInstance.get(
+    `/student/course-progress/${courseId}/getQuiz`
+  );
+
+  return data;
+}
+
+// submit quiz attempt api service   :
+async function submitQuizAttemptService(quizId, selectedAnswers) {
+  console.log("requested");
+  const { data } = await axiosInstance.post(
+    `/student/course-progress/attempt/${quizId}`,
+    {
+      answers: selectedAnswers,
+    }
+  );
+
+  return data;
+}
+
+// get quiz attempt results api service :
+async function getQuizAttemptResultService(attemptId) {
+  const { data } = await axiosInstance.get(
+    `/student/course-progress/getAttemptResults/${attemptId}`
   );
 
   return data;
@@ -320,4 +352,7 @@ export {
   getAllCommentsService,
   getPopularCoursesService,
   createCourseQuizService,
+  getCourseQuizService,
+  submitQuizAttemptService,
+  getQuizAttemptResultService,
 };
