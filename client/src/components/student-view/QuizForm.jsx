@@ -1,12 +1,17 @@
-import { getCourseQuizService } from "@/services";
+import { getCourseQuizService, submitQuizAttemptService } from "@/services";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const QuizForm = () => {
   const [quiz, setQuiz] = useState({});
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [loading, setLoading] = useState(true);
   const { id: courseId } = useParams();
+  const navigate = useNavigate();
+
+  // console.log("quiz id", quiz?._id);
+
+  console.log("ID :", courseId);
 
   useEffect(() => {
     const fetchQuizForCourse = async (courseId) => {
@@ -37,9 +42,26 @@ const QuizForm = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("submitted answers:", selectedAnswers);
+
+    try {
+      const response = await submitQuizAttemptService(
+        quiz?._id,
+        selectedAnswers
+      );
+
+      if (response?.success) {
+        console.log(response);
+
+        setTimeout(() => {
+          navigate(`/course/${courseId}/quiz-result/${response?.attempt?._id}`);
+        }, 2000);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
