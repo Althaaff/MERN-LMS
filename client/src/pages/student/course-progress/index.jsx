@@ -8,6 +8,7 @@ import {
   deleteCommentService,
   editCommentService,
   getCourseComments,
+  getCourseQuizService,
   getCurrentCourseProgressService,
   markCurrentLectureAsViewedService,
   resetCurrentCourseProgressService,
@@ -30,8 +31,8 @@ import VideoPlayer from "@/components/video-player";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Spinner from "@/components/spinner/Spinner";
-// import CommentAndDescriptionTabs from "@/components/student-view/Tabs";
 import { motion, AnimatePresence } from "framer-motion";
+import { MdQuiz } from "react-icons/md";
 
 const StudentViewCourseProgressPage = () => {
   const { auth } = useContext(AuthContext);
@@ -56,11 +57,36 @@ const StudentViewCourseProgressPage = () => {
   const [comments, setComments] = useState([]);
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editContent, setEditContent] = useState("");
+  const { quiz, setQuiz } = useContext(StudentContext);
+  const [allViewed, setAllViewed] = useState(false);
 
-  // console.log("editingCommentId:", editingCommentId);
-  // console.log("editContent:", editContent);
-  // console.log("comments", comments);
-  // console.log("comment", comment);
+  console.log("allViewed", allViewed);
+
+  // check all curriculum lectures are viewed :
+  const allLecturesViewed = (progress, curriculum) => {
+    console.log("progress", progress);
+    console.log("curriculam", curriculum);
+
+    return curriculum.every((lecture) => {
+      return progress?.some((p) => p.lectureId === lecture?._id && p.viewed);
+    });
+  };
+
+  useEffect(() => {
+    const fetchQuizForCourse = async (courseId) => {
+      try {
+        const response = await getCourseQuizService(courseId);
+
+        if (response?.success) {
+          setQuiz(response?.quiz);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchQuizForCourse(id);
+  }, [id]);
 
   useEffect(() => {
     const checkAccess = async () => {
@@ -108,17 +134,25 @@ const StudentViewCourseProgressPage = () => {
       );
 
       if (response?.success) {
+        console.log("responseHead", response);
         if (response?.data?.isPurchased) {
           setStudentCurrentCourseProgress({
             courseDetails: response?.data?.courseDetails,
             progress: response?.data?.progress,
           });
 
+          const allViewed = allLecturesViewed(
+            response?.data?.progress,
+            response?.data?.courseDetails?.curriculam
+          );
+
+          setAllViewed(allViewed);
+
           if (response?.data?.completed) {
             console.log("All lectures completed!");
             setCurrentLecture(response?.data?.courseDetails?.curriculam[0]);
-            setShowCourseCompleteDialog(true);
-            setShowConfetti(true);
+            setShowCourseCompleteDialog(false);
+            setShowConfetti(false);
             return;
           }
 
@@ -583,29 +617,57 @@ const StudentViewCourseProgressPage = () => {
                           // console.log("isLocked :", isLocked);
 
                           return (
-                            <div
-                              key={item._id}
-                              className={`flex items-center space-x-2 text-sm font-bold p-2 rounded-lg 
+                            <>
+                              <div
+                                key={item._id}
+                                className={`flex items-center space-x-2 text-sm font-bold p-2 rounded-lg 
                          ${
                            isLocked
                              ? "text-gray-500 cursor-not-allowed"
                              : "text-white cursor-pointer hover:bg-[#3b82f6]"
                          }`}
-                              onClick={() =>
-                                !isLocked && setCurrentLecture(item)
-                              }
-                            >
-                              {isViewed ? (
-                                <Check className="w-4 h-4 text-green-500" />
-                              ) : isLocked ? (
-                                <Lock className="w-4 h-4 text-gray-500" />
-                              ) : (
-                                <Play className="w-4 h-4" />
-                              )}
-                              <span>{item?.title}</span>
-                            </div>
+                                onClick={() =>
+                                  !isLocked && setCurrentLecture(item)
+                                }
+                              >
+                                {isViewed ? (
+                                  <Check className="w-4 h-4 text-green-500" />
+                                ) : isLocked ? (
+                                  <Lock className="w-4 h-4 text-gray-500" />
+                                ) : (
+                                  <Play className="w-4 h-4" />
+                                )}
+                                <span>{item?.title}</span>
+                              </div>
+                            </>
                           );
                         }
+                      )}
+
+                      {quiz !== null && (
+                        <div
+                          className={`flex items-center  border-none p-2 rounded-md bg-blue-500 ${
+                            !allViewed && "bg-gray-800"
+                          } gap-2`}
+                        >
+                          <span>
+                            <MdQuiz size={28} color="white" />
+                          </span>
+                          <button
+                            disabled={!allViewed}
+                            onClick={() =>
+                              allViewed &&
+                              navigate(`/course-progress/quiz/${id}`)
+                            }
+                            className={`text-white font-normal ${
+                              !allViewed
+                                ? "opacity-50 cursor-not-allowed"
+                                : "cursor-pointer"
+                            }`}
+                          >
+                            Take Quiz{" "}
+                          </button>
+                        </div>
                       )}
                     </div>
                   </ScrollArea>
