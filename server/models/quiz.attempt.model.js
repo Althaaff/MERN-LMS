@@ -50,14 +50,32 @@ export const quizAttemptSchema = new Schema(
       },
     ],
 
+    attemptId: {
+      type: mongoose.Types.ObjectId,
+      ref: "User",
+    },
+
     score: {
       type: Number,
       required: true,
+      default: 0,
+    },
+
+    attempted: {
+      type: Boolean,
+      default: true,
+    },
+    isPassed: {
+      type: Boolean,
+      default: false,
+    },
+
+    percentage: {
+      type: Number,
     },
 
     totalQuestions: {
       type: Number,
-      required: true,
     },
     attemptedAt: {
       type: Date,
