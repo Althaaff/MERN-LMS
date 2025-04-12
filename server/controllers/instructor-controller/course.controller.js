@@ -6,7 +6,7 @@ export const createNewCourse = async (req, res) => {
   try {
     const courseData = req.body;
     const newlyCreatedCourse = new Course(courseData);
-    const savedCourse = newlyCreatedCourse.save();
+    const savedCourse = await newlyCreatedCourse.save();
 
     if (savedCourse) {
       return res.status(200).json({
