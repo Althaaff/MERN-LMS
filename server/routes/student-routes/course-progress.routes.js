@@ -9,6 +9,10 @@ import { authenticateMiddleware } from "../../middleware/auth-middleware.js";
 import { getQuizForCourse } from "../../controllers/student-controller/getQuiz.controller.js";
 import { submitQuizAttempt } from "../../controllers/student-controller/submitQuiz.controller.js";
 import { getQuizAttemptResults } from "../../controllers/student-controller/getQuizAttempt.controller.js";
+import {
+  quizAttemptStatus,
+  resetAttemptStatus,
+} from "../../controllers/student-controller/quiz.attemptStatus.controller.js";
 
 const router = express.Router();
 
@@ -23,5 +27,7 @@ router.get(
 router.get("/:courseId/getQuiz", authenticateMiddleware, getQuizForCourse);
 router.post("/attempt/:quizId", authenticateMiddleware, submitQuizAttempt);
 router.get("/getAttemptResults/:attemptId", getQuizAttemptResults);
+router.get("/:quizId", authenticateMiddleware, quizAttemptStatus);
+router.get("/reset/:attemptId", resetAttemptStatus);
 
 export default router;
