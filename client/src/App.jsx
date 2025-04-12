@@ -2,7 +2,10 @@
 
 import RouteGuard from "@/components/route-guard";
 import StudentViewCommonLayout from "@/components/student-view/Common-layout";
+import QuizAttemptResult from "@/components/student-view/QuizAttemptResult";
+import QuizForm from "@/components/student-view/QuizForm";
 import { AuthContext } from "@/context/auth-context";
+import { StudentContext } from "@/context/student-context";
 import AuthPage from "@/pages/auth";
 import InstructorDashboardPage from "@/pages/instructor";
 import AddNewCoursePage from "@/pages/instructor/add-new-course";
@@ -19,6 +22,10 @@ import { ToastContainer } from "react-toastify";
 
 function App() {
   const { auth } = useContext(AuthContext);
+  const { quiz } = useContext(StudentContext);
+
+  console.log("quiz console", quiz);
+
   return (
     <>
       <Routes>
@@ -89,6 +96,14 @@ function App() {
           <Route
             path="/course-progress/:id"
             element={<StudentViewCourseProgressPage />}
+          />
+          <Route
+            path="/course-progress/quiz/:id"
+            element={<QuizForm quiz={quiz} />}
+          />
+          <Route
+            path="/course/:courseId/quiz-result/:attemptId"
+            element={<QuizAttemptResult quiz={quiz} />}
           />
         </Route>
 
