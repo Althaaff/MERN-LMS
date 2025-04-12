@@ -324,6 +324,24 @@ async function getQuizAttemptResultService(attemptId) {
   return data;
 }
 
+// quiz attempt status client api service :
+async function checkQuizAttemptStatusService(quizId, studentId) {
+  const { data } = await axiosInstance.get(
+    `/student/course-progress/${quizId}?studentId=${studentId}`
+  );
+
+  return data;
+}
+
+// attempt status reset service :
+async function resetAttemptStatusService(attemptId) {
+  const { data } = await axiosInstance.get(
+    `/student/course-progress/reset/${attemptId}`
+  );
+
+  return data;
+}
+
 export {
   registerService,
   loginService,
@@ -355,4 +373,6 @@ export {
   getCourseQuizService,
   submitQuizAttemptService,
   getQuizAttemptResultService,
+  checkQuizAttemptStatusService,
+  resetAttemptStatusService,
 };
