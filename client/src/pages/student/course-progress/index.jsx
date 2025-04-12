@@ -4,6 +4,7 @@ import { AuthContext } from "@/context/auth-context";
 import { FaCommentAlt } from "react-icons/fa";
 import {
   checkCoursePurchaseService,
+  checkQuizAttemptStatusService,
   createCommentService,
   deleteCommentService,
   editCommentService,
@@ -11,12 +12,13 @@ import {
   getCourseQuizService,
   getCurrentCourseProgressService,
   markCurrentLectureAsViewedService,
+  resetAttemptStatusService,
   resetCurrentCourseProgressService,
 } from "@/services";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StudentContext } from "@/context/student-context";
 import { Button } from "@/components/ui/button";
-import { Check, ChevronLeft, ChevronRight, Lock, Play } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Lock, Play, X } from "lucide-react";
 import { toast } from "react-toastify";
 import {
   Dialog,
@@ -42,8 +44,6 @@ const StudentViewCourseProgressPage = () => {
   const navigate = useNavigate();
   const { studentCurrentCourseProgress, setStudentCurrentCourseProgress } =
     useContext(StudentContext);
-
-  console.log("auth", auth?.user?._id);
   const [isChecking, setIsChecking] = useState(true);
   const [currentLecture, setCurrentLecture] = useState(null);
   const [showCourseCompleteDialog, setShowCourseCompleteDialog] =
@@ -59,14 +59,12 @@ const StudentViewCourseProgressPage = () => {
   const [editContent, setEditContent] = useState("");
   const { quiz, setQuiz } = useContext(StudentContext);
   const [allViewed, setAllViewed] = useState(false);
+  const [checkQuizAttempted, setCheckQuizAttempted] = useState({});
 
-  console.log("allViewed", allViewed);
+  console.log(checkQuizAttempted?.attempted, checkQuizAttempted?.isPassed);
 
   // check all curriculum lectures are viewed :
   const allLecturesViewed = (progress, curriculum) => {
-    console.log("progress", progress);
-    console.log("curriculam", curriculum);
-
     return curriculum.every((lecture) => {
       return progress?.some((p) => p.lectureId === lecture?._id && p.viewed);
     });
@@ -78,6 +76,7 @@ const StudentViewCourseProgressPage = () => {
         const response = await getCourseQuizService(courseId);
 
         if (response?.success) {
+          console.log("called Get Quizz..");
           setQuiz(response?.quiz);
         }
       } catch (error) {
@@ -87,6 +86,39 @@ const StudentViewCourseProgressPage = () => {
 
     fetchQuizForCourse(id);
   }, [id]);
+
+  async function checkQuizAttemptStatus(quizId, studentId) {
+    try {
+      const response = await checkQuizAttemptStatusService(quizId, studentId);
+
+      if (response.success) {
+        setCheckQuizAttempted(response);
+        if (response?.attempted && response?.isPassed && allViewed) {
+          setShowCourseCompleteDialog(true);
+          setShowConfetti(true);
+        } else {
+          setShowCourseCompleteDialog(false);
+          setShowConfetti(false);
+        }
+      } else {
+        setShowCourseCompleteDialog(false);
+        setShowConfetti(false);
+      }
+    } catch (error) {
+      console.error(error);
+      setShowCourseCompleteDialog(false);
+      setShowConfetti(false);
+    }
+  }
+
+  useEffect(() => {
+    if (quiz?._id && auth?.user?._id) {
+      checkQuizAttemptStatus(quiz?._id, auth?.user?._id);
+    } else {
+      setShowCourseCompleteDialog(false);
+      setShowConfetti(false);
+    }
+  }, [quiz?._id, allViewed, auth?.user?._id]);
 
   useEffect(() => {
     const checkAccess = async () => {
@@ -104,7 +136,6 @@ const StudentViewCourseProgressPage = () => {
       const isPurchased = purchaseResponse?.success && purchaseResponse?.data;
 
       if (!isPurchased) {
-        console.log("Not purchased, redirecting to course details page", id);
         toast.warning("Please purchase the course before accessing it.", {
           position: "top-right",
           autoClose: 3000, // Closes after 3 seconds
@@ -134,7 +165,6 @@ const StudentViewCourseProgressPage = () => {
       );
 
       if (response?.success) {
-        console.log("responseHead", response);
         if (response?.data?.isPurchased) {
           setStudentCurrentCourseProgress({
             courseDetails: response?.data?.courseDetails,
@@ -149,10 +179,7 @@ const StudentViewCourseProgressPage = () => {
           setAllViewed(allViewed);
 
           if (response?.data?.completed) {
-            console.log("All lectures completed!");
             setCurrentLecture(response?.data?.courseDetails?.curriculam[0]);
-            setShowCourseCompleteDialog(false);
-            setShowConfetti(false);
             return;
           }
 
@@ -163,7 +190,6 @@ const StudentViewCourseProgressPage = () => {
 
           // unlock only the next lecture if the first lecture is viewed :
           const nextLectureIndex = lastLectureIndexViewed + 1;
-          console.log("This is the next lecture:", nextLectureIndex);
           setCurrentLecture(
             response?.data?.courseDetails?.curriculam[nextLectureIndex] || null
           );
@@ -275,10 +301,8 @@ const StudentViewCourseProgressPage = () => {
   };
 
   const handleDelete = async (commentId) => {
-    console.log("comment id", commentId);
     try {
       const response = await deleteCommentService(commentId);
-      console.log(response);
 
       if (response.success) {
         toast.success("Review Deleted..");
@@ -301,9 +325,10 @@ const StudentViewCourseProgressPage = () => {
 
   useEffect(() => {
     if (showConfetti) {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         setShowConfetti(false);
-      }, 15000);
+      }, 5000);
+      return () => clearTimeout(timer);
     }
   }, [showConfetti]);
 
@@ -313,17 +338,47 @@ const StudentViewCourseProgressPage = () => {
     }
   }, [currentLecture]);
 
-  async function handleRewatchCourse() {
-    const response = await resetCurrentCourseProgressService(
-      auth?.user?._id,
-      studentCurrentCourseProgress?.courseDetails?._id
-    );
+  async function resetQuizAttempt(attemptId) {
+    // setResetingAttempt(true);
+    try {
+      const response = await resetAttemptStatusService(attemptId);
 
-    if (response?.success) {
-      setCurrentLecture(null);
-      setShowConfetti(false);
-      setShowCourseCompleteDialog(false);
-      fetchCurrentCourseProgress();
+      if (response?.success) {
+        setCheckQuizAttempted({});
+        toast.success("Quiz attempt reset successfully.");
+      } else {
+        toast.error("Failed to reset quiz attempt.");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("An error occurred while resetting the quiz attempt.");
+    }
+  }
+
+  async function handleRewatchCourse() {
+    try {
+      const response = await resetCurrentCourseProgressService(
+        auth?.user?._id,
+        studentCurrentCourseProgress?.courseDetails?._id
+      );
+
+      if (response?.success) {
+        if (checkQuizAttempted?.attemptId) {
+          console.log("reset done !", checkQuizAttempted?.attemptId);
+          await resetQuizAttempt(checkQuizAttempted?.attemptId);
+        }
+        setCurrentLecture(null);
+        setShowConfetti(false);
+        setAllViewed(false);
+        setShowCourseCompleteDialog(false);
+        setCheckQuizAttempted({});
+        await fetchCurrentCourseProgress();
+      } else {
+        toast.error("Failed to reset course progress.");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("An error occurred while resetting the course.");
     }
   }
 
@@ -334,12 +389,17 @@ const StudentViewCourseProgressPage = () => {
   if (loadingState) {
     return <Spinner />;
   }
+
   function handleTabClick(tab) {
     setActiveTab(tab);
 
     if (tab === "comments") {
       requestAnimationFrame(() => setShowModal(true));
     }
+  }
+
+  function handleClose() {
+    setShowCourseCompleteDialog(false);
   }
 
   return (
@@ -529,7 +589,6 @@ const StudentViewCourseProgressPage = () => {
                                   </p>
                                 ) : (
                                   comments.map((comment) => {
-                                    console.log("commentId", comment);
                                     return (
                                       <div
                                         key={comment._id}
@@ -646,7 +705,7 @@ const StudentViewCourseProgressPage = () => {
 
                       {quiz !== null && (
                         <div
-                          className={`flex items-center  border-none p-2 rounded-md bg-blue-500 ${
+                          className={`flex items-center border-none p-2 cursor-pointer rounded-md bg-blue-500 ${
                             !allViewed && "bg-gray-800"
                           } gap-2`}
                         >
@@ -655,17 +714,35 @@ const StudentViewCourseProgressPage = () => {
                           </span>
                           <button
                             disabled={!allViewed}
-                            onClick={() =>
-                              allViewed &&
-                              navigate(`/course-progress/quiz/${id}`)
-                            }
+                            onClick={() => {
+                              if (allViewed) {
+                                if (
+                                  checkQuizAttempted?.attempted &&
+                                  checkQuizAttempted?.isPassed
+                                ) {
+                                  navigate(
+                                    `/course/${id}/quiz-result/${checkQuizAttempted?.attemptId}`
+                                  );
+                                } else {
+                                  navigate(`/course-progress/quiz/${id}`);
+                                }
+                              }
+                            }}
                             className={`text-white font-normal ${
                               !allViewed
                                 ? "opacity-50 cursor-not-allowed"
                                 : "cursor-pointer"
                             }`}
                           >
-                            Take Quiz{" "}
+                            {allViewed
+                              ? checkQuizAttempted?.attempted &&
+                                checkQuizAttempted?.isPassed
+                                ? "Check Results"
+                                : checkQuizAttempted?.attempted &&
+                                  !checkQuizAttempted?.isPassed
+                                ? "Please Try Again"
+                                : "Take Quiz"
+                              : "Take Quiz"}
                           </button>
                         </div>
                       )}
@@ -704,7 +781,15 @@ const StudentViewCourseProgressPage = () => {
           <Dialog open={showCourseCompleteDialog}>
             <DialogContent showOverlay={false} className="sm:w-[425px]">
               <DialogHeader>
-                <DialogTitle>Congratulations!</DialogTitle>
+                <DialogTitle>
+                  Congratulations!
+                  <button
+                    onClick={handleClose}
+                    className="absolute top-2 right-2 p-1 rounded-full bg-black text-white border-none"
+                  >
+                    <X className="h-5 w-5 cursor-pointer" />
+                  </button>
+                </DialogTitle>
               </DialogHeader>
               <DialogDescription className="flex flex-col gap-3">
                 <Label className="text-start">
