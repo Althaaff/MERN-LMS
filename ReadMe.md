@@ -26,6 +26,10 @@ Student Features
 
 ✅ Course Progress Tracking: Access purchased courses and track progress.
 
+✅ Admin can generate quiz based on course title (used gemini api for generating quiz questions)
+
+✅ Student can attempt quiz by clicking `Take Quiz` button and get the quiz and also student can see the attempted result (like which is wrong attempt ans which one correct)
+
 🛠️ Tech Stack
 
 Frontend: React.js, Shadcn, tailwind
