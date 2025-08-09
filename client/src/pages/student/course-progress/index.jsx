@@ -8,7 +8,7 @@ import {
   createCommentService,
   deleteCommentService,
   editCommentService,
-  getCourseComments,
+  getCourseCommentsService,
   getCourseQuizService,
   getCurrentCourseProgressService,
   markCurrentLectureAsViewedService,
@@ -61,8 +61,6 @@ const StudentViewCourseProgressPage = () => {
   const [allViewed, setAllViewed] = useState(false);
   const [checkQuizAttempted, setCheckQuizAttempted] = useState({});
 
-  console.log(checkQuizAttempted?.attempted, checkQuizAttempted?.isPassed);
-
   // check all curriculum lectures are viewed :
   const allLecturesViewed = (progress, curriculum) => {
     return curriculum.every((lecture) => {
@@ -76,11 +74,10 @@ const StudentViewCourseProgressPage = () => {
         const response = await getCourseQuizService(courseId);
 
         if (response?.success) {
-          console.log("called Get Quizz..");
           setQuiz(response?.quiz);
         }
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
     };
 
@@ -243,7 +240,7 @@ const StudentViewCourseProgressPage = () => {
 
     if (editingCommentId) {
       // If we're in edit mode, call save instead
-      handleSaveEdit(e);
+      handleSaveEdit();
       return;
     }
     try {
@@ -254,13 +251,13 @@ const StudentViewCourseProgressPage = () => {
         setComments([response?.comment, ...comments]);
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   }
 
   useEffect(() => {
     async function fetchCourseComments() {
-      const response = await getCourseComments(id);
+      const response = await getCourseCommentsService(id);
 
       if (response.success) {
         setComments(response?.comments);
@@ -276,18 +273,18 @@ const StudentViewCourseProgressPage = () => {
     setComment(comment?.content);
   };
 
-  const handleSaveEdit = async (e) => {
-    e.preventDefault();
-
+  const handleSaveEdit = async () => {
     try {
       const response = await editCommentService(editContent, editingCommentId);
+
+      console.log("response:", response.comment.content);
 
       if (response?.success) {
         // Update the comments array with the edited comment :
         setComments(
           comments?.map((comment) =>
             comment?._id === editingCommentId
-              ? { ...comment, content: editContent }
+              ? { ...comment, content: response.comment.content }
               : comment
           )
         );
@@ -296,7 +293,7 @@ const StudentViewCourseProgressPage = () => {
       setComment("");
       toast.success("Your Review Updated..");
     } catch (error) {
-      console.log(error);
+      console.error("error", error);
     }
   };
 
@@ -315,7 +312,8 @@ const StudentViewCourseProgressPage = () => {
         setEditContent("");
       }
     } catch (error) {
-      console.log(error);
+      console.log("error is", error);
+      console.error(error);
     }
   };
 
@@ -364,7 +362,6 @@ const StudentViewCourseProgressPage = () => {
 
       if (response?.success) {
         if (checkQuizAttempted?.attemptId) {
-          console.log("reset done !", checkQuizAttempted?.attemptId);
           await resetQuizAttempt(checkQuizAttempted?.attemptId);
         }
         setCurrentLecture(null);
@@ -589,6 +586,7 @@ const StudentViewCourseProgressPage = () => {
                                   </p>
                                 ) : (
                                   comments.map((comment) => {
+                                    console.log("comment", comment.userId);
                                     return (
                                       <div
                                         key={comment._id}
@@ -598,22 +596,29 @@ const StudentViewCourseProgressPage = () => {
                                           <span className="text-white text-[19px]">
                                             {comment.content}
                                           </span>
-                                          <button
-                                            className=" px-1 shadow-lg bg-blue-400 text-white font-bold
+                                          {auth.user?._id ===
+                                            comment.userId && (
+                                            <>
+                                              <button
+                                                className=" px-1 shadow-lg bg-blue-400 text-white font-bold
                                          rounded-md cursor-pointer"
-                                            onClick={() => handleEdit(comment)}
-                                          >
-                                            Edit
-                                          </button>
+                                                onClick={() =>
+                                                  handleEdit(comment)
+                                                }
+                                              >
+                                                Edit
+                                              </button>
 
-                                          <button
-                                            className=" px-1 shadow-lg bg-red-400 text-white font-bold rounded-md cursor-pointer"
-                                            onClick={() =>
-                                              handleDelete(comment?._id)
-                                            }
-                                          >
-                                            Delete
-                                          </button>
+                                              <button
+                                                className=" px-1 shadow-lg bg-red-400 text-white font-bold rounded-md cursor-pointer"
+                                                onClick={() =>
+                                                  handleDelete(comment?._id)
+                                                }
+                                              >
+                                                Delete
+                                              </button>
+                                            </>
+                                          )}
                                         </div>
                                         <hr className="border-t-[0.5px] border-gray-400 opacity-40 " />
                                       </div>
@@ -672,8 +677,6 @@ const StudentViewCourseProgressPage = () => {
                             index > 0 &&
                             !studentCurrentCourseProgress?.progress[index - 1]
                               ?.viewed;
-
-                          // console.log("isLocked :", isLocked);
 
                           return (
                             <>
