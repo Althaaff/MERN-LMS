@@ -2,13 +2,9 @@ import { Comment } from "../../models/comment.model.js";
 import { errorHandler } from "../../utils/errorHandler.js";
 
 export const createComment = async (req, res, next) => {
-  console.log(req?.user?._id);
   try {
     const { content, courseId, userId } = req.body;
-
-    console.log("content", content);
-    console.log("course Id", courseId);
-    console.log("userId", userId);
+    console.log("content", content, courseId, userId);
 
     if (userId !== req.user?._id) {
       return "you are not allowed to comment this course..";
@@ -35,24 +31,30 @@ export const editComment = async (req, res, next) => {
   try {
     const comment = await Comment.findById(req.params.commentId);
 
-    if (comment.length === 0) {
+    console.log("comment", comment);
+
+    if (!comment) {
       return next(errorHandler(404, "Comment not found!"));
     }
 
-    const editedComment = await Comment.findByIdAndUpdate(
-      req.params.commentId,
-      {
-        content: req.body.content,
-      },
-      {
-        new: true,
-      }
-    );
+    if (comment.userId !== req.user?._id) {
+      console.log("TRUE");
+      return next(
+        errorHandler(403, "You are not allowed to edit this comment!")
+      );
+    }
 
-    res.status(200).json({
+    if (!req.body.content || req.body.content.trim() === "") {
+      return next(errorHandler(400, "Comment content cannot be empty"));
+    }
+
+    comment.content = req.body.content;
+    const updatedComment = await comment.save();
+
+    return res.status(200).json({
       success: true,
-      mesage: "review updated successfully..",
-      comment: editedComment,
+      message: "Comment updated successfully",
+      comment: updatedComment,
     });
   } catch (error) {
     next(error);
@@ -61,22 +63,32 @@ export const editComment = async (req, res, next) => {
 
 export const deleteComment = async (req, res, next) => {
   try {
+    console.log("comment id", req.params.commentId);
     const comment = await Comment.findById(req.params.commentId);
 
-    if (comment.length === 0) {
+    if (!comment) {
       return next(errorHandler(404, "Comment not found!"));
     }
 
-    if (comment.userId !== req.user?._id && !req.role === "instructor") {
+    if (
+      comment.userId.toString() !== req.user?._id.toString() &&
+      req.role !== "instructor"
+    ) {
+      console.log(
+        "users",
+        comment.userId.toString(),
+        "logged in user:",
+        req.user?._id.toString()
+      );
       return next(
         errorHandler(403, "You are not allowed delete this comment!")
       );
     }
 
     await Comment.findByIdAndDelete(req.params.commentId);
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      message: "comment has been deleted successfully..",
+      message: "Comment deleted successfully",
     });
   } catch (error) {
     next(error);
@@ -86,15 +98,34 @@ export const deleteComment = async (req, res, next) => {
 export const getCourseComments = async (req, res, next) => {
   try {
     const comments = await Comment.find({ courseId: req.params.courseId });
-    console.log("all comments", comments);
 
     if (comments.length === 0) {
       return next(errorHandler(404, "comments not found!"));
     }
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "comments are fetched successfully..",
+      comments,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAllComments = async (req, res, next) => {
+  try {
+    const comments = await Comment.find().sort({ createdAt: -1 }); // newest first
+
+    if (comments.length === 0) {
+      return next(errorHandler(404, "No comments found!"));
+    }
+
+    console.log("allcomments", comments);
+
+    return res.status(200).json({
+      success: true,
+      message: "All comments fetched successfully",
       comments,
     });
   } catch (error) {
