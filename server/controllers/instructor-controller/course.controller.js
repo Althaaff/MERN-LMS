@@ -16,7 +16,7 @@ export const createNewCourse = async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
 
     res.status(500).json({
       success: false,
@@ -29,14 +29,13 @@ export const createNewCourse = async (req, res) => {
 export const getAllCourses = async (req, res) => {
   try {
     const coursesList = await Course.find({});
-    // console.log("course lists :", coursesList);
 
     return res.status(200).json({
       success: true,
       data: coursesList,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
 
     return res.status(500).json({
       success: false,
@@ -63,7 +62,7 @@ export const getCourseDetailsById = async (req, res) => {
       data: courseDetails,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
 
     res.status(500).json({
       success: false,
@@ -98,7 +97,7 @@ export const updateCourseById = async (req, res) => {
       data: updatedCourse,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
 
     res.status(500).json({
       success: false,
@@ -111,8 +110,6 @@ export const updateCourseById = async (req, res) => {
 export const deleteCourseById = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log("deleted course id", id);
-
     const deletedCourse = await Course.findByIdAndDelete(id);
 
     if (!deletedCourse) {
@@ -128,7 +125,7 @@ export const deleteCourseById = async (req, res) => {
       data: {},
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
 
     res.status(500).json({
       success: false,
@@ -137,21 +134,45 @@ export const deleteCourseById = async (req, res) => {
   }
 };
 
-export const getAllComments = async (req, res, next) => {
+export const getAllCourseComments = async (req, res, next) => {
   try {
-    const comments = await Comment.find();
-    console.log("all comments", comments);
+    const comments = await Comment.find().sort({ createdAt: -1 }); // newest first
+
+    console.log("comments", comments);
 
     if (comments.length === 0) {
-      return next(errorHandler(404, "comments not found!"));
+      return next(errorHandler(404, "No comments found!"));
     }
 
-    res.status(201).json({
+    console.log("allcomments", comments);
+
+    return res.status(200).json({
       success: true,
-      message: "all comments are fetched successfully..",
+      message: "All comments fetched successfully",
       comments,
     });
   } catch (error) {
     next(error);
+  }
+};
+
+export const deleteCommentById = async (req, res, next) => {
+  try {
+    const { commentId } = req.params;
+    const deletedComment = await Comment.findByIdAndDelete(commentId);
+
+    if (!deletedComment) {
+      return res.status(400).json({
+        success: false,
+        message: "Comment not found!",
+      });
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: "student comment deleted successfullly !",
+    });
+  } catch (error) {
+    console.error(error);
   }
 };

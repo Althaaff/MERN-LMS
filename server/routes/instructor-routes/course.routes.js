@@ -3,8 +3,9 @@
 import express from "express";
 import {
   createNewCourse,
+  deleteCommentById,
   deleteCourseById,
-  getAllComments,
+  getAllCourseComments,
   getAllCourses,
   getCourseDetailsById,
   updateCourseById,
@@ -20,7 +21,8 @@ router.get("/get", getAllCourses);
 router.get("/get/details/:id", getCourseDetailsById);
 router.put("/update/:id", updateCourseById);
 router.delete("/delete/:id", deleteCourseById);
-router.get("/getAllComments", getAllComments);
+router.get("/getAllCourseComments", getAllCourseComments);
+router.delete("/deleteStudentsComment/:commentId", deleteCommentById);
 router.get("/getPopularCourses", getPopularCourses);
 router.post(
   "/generate/:courseId",
